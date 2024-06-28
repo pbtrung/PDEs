@@ -2,12 +2,7 @@ import gmsh
 from dolfinx.io import gmshio, XDMFFile
 from mpi4py import MPI
 
-
-gdim = 3
-r = 1.0
-l = 2.0
-size_max = 0.05
-fname = "cylinder_mesh"
+from vars import *
 
 
 def gen_cylinder_gmsh():

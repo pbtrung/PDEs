@@ -14,7 +14,7 @@ from dolfinx.fem import (
 )
 from dolfinx.io import XDMFFile
 
-from cylinder_mesh import l, gdim, fname
+from vars import *
 
 
 def get_mesh():
@@ -73,9 +73,7 @@ def solve(mesh):
     # Define function space
     V = functionspace(mesh, ("Lagrange", 1))
 
-    top_bc = dirichletbc(
-        PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V
-    )
+    top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
 
     # Initial condition
     c_n = Function(V)
@@ -98,10 +96,7 @@ def solve(mesh):
     a = (
         c * v * ufl.dx
         + dt
-        * (
-            ufl.dot(velocity, ufl.grad(c)) * v
-            + diffusivity * ufl.dot(ufl.grad(c), ufl.grad(v))
-        )
+        * (ufl.dot(velocity, ufl.grad(c)) * v + diffusivity * ufl.dot(ufl.grad(c), ufl.grad(v)))
         * ufl.dx
     )
     L = c_n * v * ufl.dx
