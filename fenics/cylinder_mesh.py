@@ -1,3 +1,5 @@
+import sys
+
 import gmsh
 from dolfinx.io import gmshio, XDMFFile
 from mpi4py import MPI
@@ -5,7 +7,7 @@ from mpi4py import MPI
 from vars import *
 
 
-def gen_cylinder_gmsh():
+def gen_cylinder_gmsh(fname):
     gmsh.initialize()
 
     gmsh.model.add("cylinder")
@@ -21,7 +23,7 @@ def gen_cylinder_gmsh():
     gmsh.finalize()
 
 
-def gen_cylinder_xdmf():
+def gen_cylinder_xdmf(fname):
     mesh, cell_markers, facet_markers = gmshio.read_from_msh(
         fname + ".msh", MPI.COMM_WORLD, 0, gdim=gdim
     )
@@ -32,5 +34,8 @@ def gen_cylinder_xdmf():
 
 
 if __name__ == "__main__":
-    gen_cylinder_gmsh()
-    gen_cylinder_xdmf()
+    if len(sys.argv) == 2:
+        gen_cylinder_gmsh(sys.argv[1])
+        gen_cylinder_xdmf(sys.argv[1])
+    else:
+        print("Must have filename.")
