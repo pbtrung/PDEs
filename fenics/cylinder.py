@@ -43,10 +43,10 @@ def initial_condition(x):
 
 
 def get_velocity_field(mesh):
-    v = np.random.uniform(low=-0.5, high=0.5, size=(3,))
-    v[2] = -v[2] if v[2] >= 0 else v[2]
-    velocity = Constant(mesh, PETSc.ScalarType((v[0], v[1], v[2])))
-    # velocity = Constant(mesh, PETSc.ScalarType((0.0, 0.0, -0.2)))
+    # v = np.random.uniform(low=-0.5, high=0.5, size=(3,))
+    # v[2] = -v[2] if v[2] >= 0 else v[2]
+    # velocity = Constant(mesh, PETSc.ScalarType((v[0], v[1], v[2])))
+    velocity = Constant(mesh, PETSc.ScalarType((0.0, 0.0, -0.2)))
 
     # V = functionspace(mesh, ("DG", 0, (gdim,)))
     # velocity = Function(V)
@@ -64,7 +64,7 @@ def get_diffusivity_field(mesh):
     V = functionspace(mesh, ("DG", 0))
     diffusivity = Function(V)
     x = V.tabulate_dof_coordinates()
-    diffusivity.x.array[:] = np.random.uniform(0.001, 0.002, x.shape[0])
+    diffusivity.x.array[:] = np.random.uniform(0.01, 0.02, x.shape[0])
 
     return diffusivity
 
