@@ -126,6 +126,7 @@ def solve(mesh, cond_type):
 
         while t < T:
             t += dt
+            print(f"t = {t:.2f} / T = {T:.2f}")
 
             # Solve the linear problem
             c = problem.solve()
