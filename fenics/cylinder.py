@@ -143,7 +143,8 @@ def solve(mesh, fname, cond_type):
 
         while t < T:
             t += dt
-            print(f"t = {t:.2f} / T = {T:.2f}")
+            if rank == 0:
+                print(f"t = {t:.2f} / T = {T:.2f}")
 
             si = time.time()
             # Solve the linear problem
