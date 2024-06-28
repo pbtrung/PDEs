@@ -1,4 +1,5 @@
 import sys
+import time
 
 import numpy as np
 from mpi4py import MPI
@@ -76,6 +77,7 @@ def solve(mesh, cond_type):
     V = functionspace(mesh, ("Lagrange", 1))
 
     # Initial condition
+    s = time.time()
     if cond_type == "ic":
         c_n = Function(V)
         c_n.interpolate(initial_condition)
@@ -83,10 +85,15 @@ def solve(mesh, cond_type):
         top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
         c_n = Function(V)
         c_n.interpolate(lambda x: np.zeros_like(x[0]))
+    e = time.time()
+    print(f"2: Took {e-s:.4f}s")
 
     # Velocity and diffusivity
+    s = time.time()
     velocity = get_velocity_field(mesh)
     diffusivity = get_diffusivity_field(mesh)
+    e = time.time()
+    print(f"3: Took {e-s:.4f}s")
 
     # Define test and trial functions
     c = ufl.TrialFunction(V)
@@ -105,6 +112,7 @@ def solve(mesh, cond_type):
     L = c_n * v * ufl.dx
 
     # Create linear problem
+    s = time.time()
     petsc_options = {"ksp_type": "cg", "ksp_rtol": 1e-6, "ksp_atol": 1e-10, "ksp_max_it": 1000}
     if cond_type == "ic":
         problem = LinearProblem(a, L, petsc_options=petsc_options)
@@ -112,6 +120,8 @@ def solve(mesh, cond_type):
     if cond_type == "bc":
         problem = LinearProblem(a, L, bcs=[top_bc], petsc_options=petsc_options)
         # problem = LinearProblem(a, L, bcs=[top_bc])
+    e = time.time()
+    print(f"4: Took {e-s:.4f}s")
 
     # Time-stepping
     T = 5.0
@@ -119,6 +129,7 @@ def solve(mesh, cond_type):
     c = Function(V)
 
     # Solve and save
+    s = time.time()
     with XDMFFile(mesh.comm, "cylinder_results.xdmf", "w") as file:
         file.write_mesh(mesh)
         diffusivity.name = "diffusivity"
@@ -128,18 +139,26 @@ def solve(mesh, cond_type):
             t += dt
             print(f"t = {t:.2f} / T = {T:.2f}")
 
+            si = time.time()
             # Solve the linear problem
             c = problem.solve()
+            ei = time.time()
+            print(f"5: Took {ei-si:.4f}s")
 
             # Update the previous solution
             c_n.x.array[:] = c.x.array[:]
 
             # Write solution to file
             file.write_function(c, t)
+    e = time.time()
+    print(f"6: Took {e-s:.4f}s")
 
 
 if __name__ == "__main__":
+    s = time.time()
     mesh = get_mesh()
+    e = time.time()
+    print(f"1: Took {e-s:.4f}s")
 
     if len(sys.argv) == 2 and sys.argv[1] == "ic":
         solve(mesh, cond_type="ic")
