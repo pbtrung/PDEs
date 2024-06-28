@@ -177,7 +177,7 @@ if __name__ == "__main__":
     rank = comm.Get_rank()
 
     if len(sys.argv) == 3:
-        logging.basicConfig(filename=sys.argv[1] + ".log", level=logging.INFO)
+        logging.basicConfig(filename=sys.argv[1] + ".log", filemode="w", level=logging.INFO)
 
         s = time.time()
         mesh = get_mesh(sys.argv[1])
