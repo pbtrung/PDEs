@@ -20,7 +20,7 @@ from dolfinx.io import XDMFFile
 from vars import *
 
 
-def get_mesh():
+def get_mesh(fname):
     with XDMFFile(MPI.COMM_WORLD, fname + ".xdmf", "r") as file:
         mesh = file.read_mesh(name="mesh")
     return mesh
@@ -72,7 +72,7 @@ def get_diffusivity_field(mesh):
     return diffusivity
 
 
-def solve(mesh, cond_type):
+def solve(mesh, fname, cond_type):
     # Define function space
     V = functionspace(mesh, ("Lagrange", 1))
 
@@ -130,7 +130,7 @@ def solve(mesh, cond_type):
 
     # Solve and save
     s = time.time()
-    with XDMFFile(mesh.comm, "cylinder_results.xdmf", "w") as file:
+    with XDMFFile(mesh.comm, fname + "_results.xdmf", "w") as file:
         file.write_mesh(mesh)
         diffusivity.name = "diffusivity"
         file.write_function(diffusivity)
@@ -155,14 +155,11 @@ def solve(mesh, cond_type):
 
 
 if __name__ == "__main__":
-    s = time.time()
-    mesh = get_mesh()
-    e = time.time()
-    print(f"1: Took {e-s:.4f}s")
-
-    if len(sys.argv) == 2 and sys.argv[1] == "ic":
-        solve(mesh, cond_type="ic")
-    elif len(sys.argv) == 2 and sys.argv[1] == "bc":
-        solve(mesh, cond_type="bc")
+    if len(sys.argv) == 3 and sys.argv[2] == "ic":
+        mesh = get_mesh(sys.argv[1])
+        solve(mesh, fname=sys.argv[1], cond_type="ic")
+    elif len(sys.argv) == 3 and sys.argv[2] == "bc":
+        mesh = get_mesh(sys.argv[1])
+        solve(mesh, fname=sys.argv[1], cond_type="bc")
     else:
-        solve(mesh, cond_type="bc")
+        print("Must have filename.")
