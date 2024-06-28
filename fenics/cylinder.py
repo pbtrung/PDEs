@@ -86,14 +86,14 @@ def solve(mesh, fname, cond_type):
         c_n = Function(V)
         c_n.interpolate(lambda x: np.zeros_like(x[0]))
     e = time.time()
-    print(f"2: Took {e-s:.4f}s")
+    print(f"2: Took {e-s:.4f}s", flush=True)
 
     # Velocity and diffusivity
     s = time.time()
     velocity = get_velocity_field(mesh)
     diffusivity = get_diffusivity_field(mesh)
     e = time.time()
-    print(f"3: Took {e-s:.4f}s")
+    print(f"3: Took {e-s:.4f}s", flush=True)
 
     # Define test and trial functions
     c = ufl.TrialFunction(V)
@@ -121,7 +121,7 @@ def solve(mesh, fname, cond_type):
         problem = LinearProblem(a, L, bcs=[top_bc], petsc_options=petsc_options)
         # problem = LinearProblem(a, L, bcs=[top_bc])
     e = time.time()
-    print(f"4: Took {e-s:.4f}s")
+    print(f"4: Took {e-s:.4f}s", flush=True)
 
     # Time-stepping
     T = 5.0
@@ -143,7 +143,7 @@ def solve(mesh, fname, cond_type):
             # Solve the linear problem
             c = problem.solve()
             ei = time.time()
-            print(f"5: Took {ei-si:.4f}s")
+            print(f"5: Took {ei-si:.4f}s", flush=True)
 
             # Update the previous solution
             c_n.x.array[:] = c.x.array[:]
@@ -151,15 +151,21 @@ def solve(mesh, fname, cond_type):
             # Write solution to file
             file.write_function(c, t)
     e = time.time()
-    print(f"6: Took {e-s:.4f}s")
+    print(f"6: Took {e-s:.4f}s", flush=True)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3 and sys.argv[2] == "ic":
+    if len(sys.argv) == 3:
+        s = time.time()
         mesh = get_mesh(sys.argv[1])
-        solve(mesh, fname=sys.argv[1], cond_type="ic")
-    elif len(sys.argv) == 3 and sys.argv[2] == "bc":
-        mesh = get_mesh(sys.argv[1])
-        solve(mesh, fname=sys.argv[1], cond_type="bc")
+        e = time.time()
+        print(f"1: Took {e-s:.4f}s", flush=True)
+
+        if sys.argv[2] == "ic":
+            solve(mesh, fname=sys.argv[1], cond_type="ic")
+        elif sys.argv[2] == "bc":
+            solve(mesh, fname=sys.argv[1], cond_type="bc")
+        else:
+            print("Wrong condition.")
     else:
         print("Must have filename.")
