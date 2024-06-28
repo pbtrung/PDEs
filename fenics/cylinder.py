@@ -181,7 +181,7 @@ if __name__ == "__main__":
             filename=sys.argv[1] + ".log",
             filemode="w",
             level=logging.INFO,
-            format="%(asctime)s %(message)s",
+            format="%(asctime)s  %(message)s",
             datefmt="%d %B %Y %H:%M:%S",
         )
 
