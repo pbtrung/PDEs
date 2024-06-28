@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from mpi4py import MPI
 from petsc4py import PETSc
@@ -69,17 +71,18 @@ def get_diffusivity_field(mesh):
     return diffusivity
 
 
-def solve(mesh):
+def solve(mesh, cond_type):
     # Define function space
     V = functionspace(mesh, ("Lagrange", 1))
 
-    # top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
-
     # Initial condition
-    # c_n = Function(V)
-    # c_n.interpolate(lambda x: np.zeros_like(x[0]))
-    c_n = Function(V)
-    c_n.interpolate(initial_condition)
+    if cond_type == "ic":
+        c_n = Function(V)
+        c_n.interpolate(initial_condition)
+    if cond_type == "bc":
+        top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
+        c_n = Function(V)
+        c_n.interpolate(lambda x: np.zeros_like(x[0]))
 
     # Velocity and diffusivity
     velocity = get_velocity_field(mesh)
@@ -102,8 +105,10 @@ def solve(mesh):
     L = c_n * v * ufl.dx
 
     # Create linear problem
-    # problem = LinearProblem(a, L, bcs=[top_bc])
-    problem = LinearProblem(a, L)
+    if cond_type == "ic":
+        problem = LinearProblem(a, L)
+    if cond_type == "bc":
+        problem = LinearProblem(a, L, bcs=[top_bc])
 
     # Time-stepping
     T = 5.0
@@ -131,4 +136,10 @@ def solve(mesh):
 
 if __name__ == "__main__":
     mesh = get_mesh()
-    solve(mesh)
+
+    if len(sys.argv) == 2 and sys.argv[1] == "ic":
+        solve(mesh, cond_type="ic")
+    elif len(sys.argv) == 2 and sys.argv[1] == "bc":
+        solve(mesh, cond_type="bc")
+    else:
+        solve(mesh, cond_type="bc")
