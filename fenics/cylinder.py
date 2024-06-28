@@ -73,13 +73,13 @@ def solve(mesh):
     # Define function space
     V = functionspace(mesh, ("Lagrange", 1))
 
-    top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
+    # top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
 
     # Initial condition
-    c_n = Function(V)
-    c_n.interpolate(lambda x: np.zeros_like(x[0]))
     # c_n = Function(V)
-    # c_n.interpolate(initial_condition)
+    # c_n.interpolate(lambda x: np.zeros_like(x[0]))
+    c_n = Function(V)
+    c_n.interpolate(initial_condition)
 
     # Velocity and diffusivity
     velocity = get_velocity_field(mesh)
@@ -102,8 +102,8 @@ def solve(mesh):
     L = c_n * v * ufl.dx
 
     # Create linear problem
-    problem = LinearProblem(a, L, bcs=[top_bc])
-    # problem = LinearProblem(a, L)
+    # problem = LinearProblem(a, L, bcs=[top_bc])
+    problem = LinearProblem(a, L)
 
     # Time-stepping
     T = 5.0
