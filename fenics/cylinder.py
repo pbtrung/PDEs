@@ -105,10 +105,11 @@ def solve(mesh, cond_type):
     L = c_n * v * ufl.dx
 
     # Create linear problem
+    petsc_options = {"ksp_type": "cg", "ksp_rtol": 1e-6, "ksp_atol": 1e-10, "ksp_max_it": 1000}
     if cond_type == "ic":
-        problem = LinearProblem(a, L)
+        problem = LinearProblem(a, L, petsc_options=petsc_options)
     if cond_type == "bc":
-        problem = LinearProblem(a, L, bcs=[top_bc])
+        problem = LinearProblem(a, L, bcs=[top_bc], petsc_options=petsc_options)
 
     # Time-stepping
     T = 5.0
