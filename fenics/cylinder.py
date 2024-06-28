@@ -160,7 +160,7 @@ def solve(mesh, fname, cond_type):
             c = problem.solve()
             ei = time.time()
             if rank == 0:
-                log(f"5: Took {e-s:.4f}s")
+                log(f"5: Took {ei-si:.4f}s")
 
             # Update the previous solution
             c_n.x.array[:] = c.x.array[:]
