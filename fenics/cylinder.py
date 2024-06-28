@@ -1,5 +1,6 @@
 import sys
 import time
+import logging
 
 import numpy as np
 from mpi4py import MPI
@@ -18,6 +19,14 @@ from dolfinx.fem import (
 from dolfinx.io import XDMFFile
 
 from vars import *
+
+
+logger = logging.getLogger(__name__)
+
+
+def log(msg):
+    print(msg, flush=True)
+    logger.info(msg)
 
 
 def get_mesh(fname):
@@ -90,7 +99,7 @@ def solve(mesh, fname, cond_type):
         c_n.interpolate(lambda x: np.zeros_like(x[0]))
     e = time.time()
     if rank == 0:
-        print(f"2: Took {e-s:.4f}s", flush=True)
+        log(f"2: Took {e-s:.4f}s")
 
     # Velocity and diffusivity
     s = time.time()
@@ -98,7 +107,7 @@ def solve(mesh, fname, cond_type):
     diffusivity = get_diffusivity_field(mesh)
     e = time.time()
     if rank == 0:
-        print(f"3: Took {e-s:.4f}s", flush=True)
+        log(f"3: Took {e-s:.4f}s")
 
     # Define test and trial functions
     c = ufl.TrialFunction(V)
@@ -127,7 +136,7 @@ def solve(mesh, fname, cond_type):
         # problem = LinearProblem(a, L, bcs=[top_bc])
     e = time.time()
     if rank == 0:
-        print(f"4: Took {e-s:.4f}s", flush=True)
+        log(f"4: Took {e-s:.4f}s")
 
     # Time-stepping
     T = 5.0
@@ -144,14 +153,14 @@ def solve(mesh, fname, cond_type):
         while t < T:
             t += dt
             if rank == 0:
-                print(f"t = {t:.2f} / T = {T:.2f}")
+                log(f"t = {t:.2f} / T = {T:.2f}")
 
             si = time.time()
             # Solve the linear problem
             c = problem.solve()
             ei = time.time()
             if rank == 0:
-                print(f"5: Took {ei-si:.4f}s", flush=True)
+                log(f"5: Took {e-s:.4f}s")
 
             # Update the previous solution
             c_n.x.array[:] = c.x.array[:]
@@ -160,7 +169,7 @@ def solve(mesh, fname, cond_type):
             file.write_function(c, t)
     e = time.time()
     if rank == 0:
-        print(f"6: Took {e-s:.4f}s", flush=True)
+        log(f"6: Took {e-s:.4f}s")
 
 
 if __name__ == "__main__":
@@ -168,11 +177,13 @@ if __name__ == "__main__":
     rank = comm.Get_rank()
 
     if len(sys.argv) == 3:
+        logging.basicConfig(filename=sys.argv[1] + ".log", level=logging.INFO)
+
         s = time.time()
         mesh = get_mesh(sys.argv[1])
         e = time.time()
         if rank == 0:
-            print(f"1: Took {e-s:.4f}s", flush=True)
+            log(f"1: Took {e-s:.4f}s")
 
         if sys.argv[2] == "ic":
             solve(mesh, fname=sys.argv[1], cond_type="ic")
