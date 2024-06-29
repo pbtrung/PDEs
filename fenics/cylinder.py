@@ -152,6 +152,8 @@ def solve(mesh, fname, cond_type):
 
         diffusivity.name = "diffusivity"
         file.write_function(diffusivity)
+        velocity.name = "velocity"
+        file.write_function(velocity)
         c_n.name = "concentration"
         file.write_function(c_n)
 
