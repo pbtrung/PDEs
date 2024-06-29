@@ -35,22 +35,21 @@ def get_mesh(fname):
     return mesh
 
 
-def top_boundary(x):
+def top_circle(x):
     center_x = 0.0
     center_y = 0.0
     radius = 0.4
-
     distance = np.sqrt((x[0] - center_x) ** 2 + (x[1] - center_y) ** 2)
+    return distance, radius
+
+
+def top_boundary(x):
+    distance, radius = top_circle(x)
     return np.logical_and(distance <= radius, np.isclose(x[2], l))
 
 
 def initial_condition(x):
-    center_x = 0.0
-    center_y = 0.0
-    radius = 0.4
-
-    distance = np.sqrt((x[0] - center_x) ** 2 + (x[1] - center_y) ** 2)
-    # Set initial condition to 1.0 within the circle at the top
+    distance, radius = top_circle(x)
     return np.where(np.logical_and(distance <= radius, np.isclose(x[2], l)), 1.0, 0.0)
 
 
@@ -90,13 +89,13 @@ def solve(mesh, fname, cond_type):
 
     # Initial condition
     s = time.time()
+    c_n = Function(V)
+    c_n.interpolate(lambda x: np.zeros_like(x[0]))
     if cond_type == "ic":
-        c_n = Function(V)
         c_n.interpolate(initial_condition)
     if cond_type == "bc":
         top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
-        c_n = Function(V)
-        c_n.interpolate(lambda x: np.zeros_like(x[0]))
+        c_n.interpolate(lambda x: np.where(top_boundary(x), 1.0, 0.0))
     e = time.time()
     if rank == 0:
         log(f"2: Took {e-s:.4f}s")
@@ -147,8 +146,11 @@ def solve(mesh, fname, cond_type):
     s = time.time()
     with XDMFFile(mesh.comm, fname + "_results.xdmf", "w") as file:
         file.write_mesh(mesh)
+
         diffusivity.name = "diffusivity"
         file.write_function(diffusivity)
+        c_n.name = "concentration"
+        file.write_function(c_n)
 
         while t < T:
             t += dt
@@ -166,7 +168,7 @@ def solve(mesh, fname, cond_type):
             c_n.x.array[:] = c.x.array[:]
 
             # Write solution to file
-            file.write_function(c, t)
+            file.write_function(c_n, t)
     e = time.time()
     if rank == 0:
         log(f"6: Took {e-s:.4f}s")
