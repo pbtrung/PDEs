@@ -148,7 +148,7 @@ def solve(mesh, fname, cond_type):
 
     # Solve and save
     s = time.time()
-    with XDMFFile(mesh.comm, fname + "_results.xdmf", "w") as file:
+    with XDMFFile(mesh.comm, f"{fname}_results_{cond_type}.xdmf", "w") as file:
         file.write_mesh(mesh)
 
         diffusivity.name = "diffusivity"
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 3:
         logging.basicConfig(
-            filename=sys.argv[1] + ".log",
+            filename=f"{sys.argv[1]}_{sys.argv[2]}.log",
             filemode="w",
             level=logging.INFO,
             format="%(asctime)s  %(message)s",
