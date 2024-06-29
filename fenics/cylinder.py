@@ -91,12 +91,15 @@ def solve(mesh, fname, cond_type):
     # Initial condition
     s = time.time()
     c_n = Function(V)
-    c_n.interpolate(lambda x: np.zeros_like(x[0]))
     if cond_type == "ic":
+        c_n.interpolate(lambda x: np.zeros_like(x[0]))
         c_n.interpolate(initial_condition)
     if cond_type == "bc":
-        top_bc = dirichletbc(PETSc.ScalarType(1.0), locate_dofs_geometrical(V, top_boundary), V)
-        c_n.interpolate(lambda x: np.where(top_boundary(x), 1.0, 0.0))
+        c_top_bc = 1.0
+        top_bc = dirichletbc(
+            PETSc.ScalarType(c_top_bc), locate_dofs_geometrical(V, top_boundary), V
+        )
+        c_n.interpolate(lambda x: np.where(top_boundary(x), c_top_bc, 0.0))
     e = time.time()
     if rank == 0:
         log(f"2: Took {e-s:.4f}s")
