@@ -64,7 +64,7 @@ def get_velocity_field(mesh):
     x = V.tabulate_dof_coordinates()
     xy_vec = np.zeros((x.shape[0], 2))
     # z_vec = np.full((x.shape[0], 1), -0.4)
-    z_vec = np.random.uniform(low=-0.5, high=-0.1, size=x.shape[0])
+    z_vec = np.random.uniform(low=-0.5, high=-0.1, size=(x.shape[0], 1))
     velocity.x.array[:] = np.hstack([xy_vec, z_vec]).flatten()
 
     return velocity
