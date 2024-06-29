@@ -92,7 +92,6 @@ def solve(mesh, fname, cond_type):
     s = time.time()
     c_n = Function(V)
     if cond_type == "ic":
-        c_n.interpolate(lambda x: np.zeros_like(x[0]))
         c_n.interpolate(initial_condition)
     if cond_type == "bc":
         c_top_bc = 1.0
