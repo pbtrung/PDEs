@@ -27,7 +27,7 @@ Plane Surface(302) = {301};
 
 BooleanDifference(400) = {Surface{2}; Delete;}{Surface{302};};
 
-// Define physical groups for the boundaries
+// Define physical groups
 Physical Surface("TopBoundary") = {302};
 Physical Volume(1) = {1};
 Physical Surface(2) = {1};
