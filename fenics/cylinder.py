@@ -117,19 +117,12 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
     if cond_type == "bc":
         c_top_bc = 1.0
         top_bc_tag = 2
-        bc_facets = facet_markers.find(top_bc_tag)
+        bc_dofs = locate_dofs_topological(V, mesh.topology.dim - 1, facet_markers.find(top_bc_tag))
 
-        top_bc = dirichletbc(
-            PETSc.ScalarType(c_top_bc),
-            locate_dofs_topological(V, dim2, bc_facets),
-            V,
-        )
+        top_bc = dirichletbc(PETSc.ScalarType(c_top_bc), bc_dofs, V)
 
         c_n.interpolate(lambda x: np.zeros_like(x[0]))
-        for facet in bc_facets:
-            dof_indices = V.dofmap().entity_closure_dofs(mesh.topology.dim - 1, facet)
-            for dof in dof_indices:
-                c_n.vector[dof] = 1.0
+        c_n.vector[bc_dofs] = 1.0
     e = time.time()
     if rank == 0:
         log(f"2: Took {e-s:.4f}s")
