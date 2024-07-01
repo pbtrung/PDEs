@@ -59,26 +59,26 @@ def get_velocity_field(mesh):
     # v = np.random.uniform(low=-0.5, high=0.5, size=(3,))
     # v[2] = -v[2] if v[2] >= 0 else v[2]
     # velocity = Constant(mesh, PETSc.ScalarType((v[0], v[1], v[2])))
-    # velocity = Constant(mesh, PETSc.ScalarType((0.0, 0.0, -0.2)))
+    velocity = Constant(mesh, PETSc.ScalarType((0.0, 0.0, -0.2)))
 
-    V = functionspace(mesh, ("DG", 0, (dim3,)))
-    velocity = Function(V)
-    x = V.tabulate_dof_coordinates()
-    xy_vec = np.zeros((x.shape[0], 2))
+    # V = functionspace(mesh, ("DG", 0, (dim3,)))
+    # velocity = Function(V)
+    # x = V.tabulate_dof_coordinates()
+    # xy_vec = np.zeros((x.shape[0], 2))
     # z_vec = np.full((x.shape[0], 1), -0.4)
-    z_vec = np.random.uniform(low=-0.5, high=-0.1, size=(x.shape[0], 1))
-    velocity.x.array[:] = np.hstack([xy_vec, z_vec]).flatten()
+    # z_vec = np.random.uniform(low=-0.5, high=-0.1, size=(x.shape[0], 1))
+    # velocity.x.array[:] = np.hstack([xy_vec, z_vec]).flatten()
 
     return velocity
 
 
 def get_diffusivity_field(mesh):
-    # diffusivity = Constant(mesh, PETSc.ScalarType(0.01))
+    diffusivity = Constant(mesh, PETSc.ScalarType(0.02))
 
-    V = functionspace(mesh, ("DG", 0))
-    diffusivity = Function(V)
-    x = V.tabulate_dof_coordinates()
-    diffusivity.x.array[:] = np.random.uniform(0.01, 0.02, x.shape[0])
+    # V = functionspace(mesh, ("DG", 0))
+    # diffusivity = Function(V)
+    # x = V.tabulate_dof_coordinates()
+    # diffusivity.x.array[:] = np.random.uniform(0.01, 0.02, x.shape[0])
 
     return diffusivity
 
@@ -117,15 +117,19 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
     if cond_type == "bc":
         c_top_bc = 1.0
         top_bc_tag = 2
-        # top_bc = dirichletbc(
-        #     PETSc.ScalarType(c_top_bc), locate_dofs_geometrical(V, top_boundary), V
-        # )
+        bc_facets = facet_markers.find(top_bc_tag)
+
         top_bc = dirichletbc(
             PETSc.ScalarType(c_top_bc),
-            locate_dofs_topological(V, dim2, facet_markers.find(top_bc_tag)),
+            locate_dofs_topological(V, dim2, bc_facets),
             V,
         )
-        c_n.interpolate(lambda x: np.where(top_boundary(x), c_top_bc, 0.0))
+
+        c_n.interpolate(lambda x: np.zeros_like(x[0]))
+        for facet in bc_facets:
+            dof_indices = V.dofmap().entity_closure_dofs(mesh.topology.dim - 1, facet)
+            for dof in dof_indices:
+                c_n.vector[dof] = 1.0
     e = time.time()
     if rank == 0:
         log(f"2: Took {e-s:.4f}s")
