@@ -34,7 +34,6 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     # small    0.01
     # med      0.03
     # big      0.05
-    gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 2)
     gmsh.option.setNumber("Mesh.RecombineAll", 1)
     gmsh.option.setNumber("Mesh.MeshSizeMax", mesh_size_max)
     gmsh.option.setNumber("General.NumThreads", 50)
