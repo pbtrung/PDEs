@@ -27,7 +27,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     plane = gmsh.model.occ.addPlaneSurface([curve])
     ring = gmsh.model.occ.addPlaneSurface([curve])
 
-    gmsh.model.occ.cut([(2, 2)], [(2, ring)], removeObject=True, removeTool=False)
+    gmsh.model.occ.cut([(2, 2)], [(2, ring)], removeObject=False, removeTool=False)
     gmsh.model.occ.synchronize()
 
     # smallest 0.005
