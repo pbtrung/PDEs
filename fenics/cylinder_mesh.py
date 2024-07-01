@@ -38,8 +38,8 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.option.setNumber("General.NumThreads", 50)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
 
-    gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
-    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
+    # gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
+    # gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
 
     gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
     gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
@@ -83,6 +83,6 @@ if __name__ == "__main__":
         fname_noext = sys.argv[1]
         mesh_size_max = float(sys.argv[2])
         gen_cylinder_gmsh(fname_noext, mesh_size_max)
-        # gen_cylinder_xdmf(fname_noext)
+        gen_cylinder_xdmf(fname_noext)
     else:
         print("Must have filename.")
