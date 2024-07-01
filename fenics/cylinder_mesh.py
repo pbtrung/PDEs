@@ -47,7 +47,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.model.setPhysicalName(dim=dim2, tag=2, name="Side")
     gmsh.model.addPhysicalGroup(dim2, [3], tag=3)
     gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Bottom")
-    gmsh.model.addPhysicalGroup(dim2, [2], tag=4)
+    gmsh.model.addPhysicalGroup(dim2, [plane], tag=4)
     gmsh.model.setPhysicalName(dim=dim2, tag=4, name="Ring")
 
     gmsh.model.mesh.generate(dim3)
