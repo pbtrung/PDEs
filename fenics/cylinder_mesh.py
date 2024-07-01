@@ -24,7 +24,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     c204 = gmsh.model.occ.addCircleArc(p104, p100, p101)
 
     curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
-    plane = gmsh.model.occ.addPlaneSurface(curve)
+    plane = gmsh.model.occ.addPlaneSurface([curve])
 
     gmsh.model.occ.synchronize()
 
