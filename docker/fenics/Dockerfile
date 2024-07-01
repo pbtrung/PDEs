@@ -1,4 +1,4 @@
-FROM dolfinx:nightly
+FROM dolfinx/dolfinx:nightly
 
 ARG uid
 ARG gid
