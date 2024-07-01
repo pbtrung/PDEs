@@ -38,8 +38,8 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
     gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
 
-    # gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
-    # gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
+    gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
+    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
 
     gmsh.model.mesh.generate(dim3)
     gmsh.write(fname_noext + ".msh")
@@ -48,7 +48,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
 
 def gen_cylinder_xdmf(fname_noext):
     mesh, cell_markers, facet_markers = gmshio.read_from_msh(
-        fname_noext + ".msh", MPI.COMM_WORLD, 0, gdim=dim3
+        fname_noext + ".msh", MPI.COMM_WORLD, 0
     )
     mesh.name = "mesh"
     cell_markers.name = f"{mesh.name}_cells"
