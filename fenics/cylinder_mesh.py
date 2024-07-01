@@ -35,6 +35,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     # med      0.03
     # big      0.05
     gmsh.option.setNumber("Mesh.MeshSizeMax", mesh_size_max)
+    gmsh.option.setNumber("General.NumThreads", 50)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
 
     gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
