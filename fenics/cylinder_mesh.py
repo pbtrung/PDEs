@@ -12,6 +12,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
 
     cy1 = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, r)
     cy2 = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, rtop)
+    cy3 = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, r)
     gmsh.model.occ.cut([(3, cy1)], [(3, cy2)], removeObject=True, removeTool=False)
 
     # p100 = gmsh.model.occ.addPoint(0, 0, l)
@@ -55,15 +56,17 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     # gmsh.model.addPhysicalGroup(2, other_boundary_entities, tag=1)
     # gmsh.model.setPhysicalName(dim=dim2, tag=1, name="boundary")
 
-    gmsh.model.addPhysicalGroup(dim3, [cy1], tag=1)
-    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="cy1")
-    gmsh.model.addPhysicalGroup(dim3, [cy2], tag=2)
-    gmsh.model.setPhysicalName(dim=dim3, tag=2, name="cy2")
+    gmsh.model.addPhysicalGroup(dim3, [cy3], tag=1)
+    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="cylinder")
 
-    gmsh.model.addPhysicalGroup(dim2, [6], tag=1)
-    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="s1")
-    gmsh.model.addPhysicalGroup(dim2, [9], tag=2)
-    gmsh.model.setPhysicalName(dim=dim2, tag=2, name="s2")
+    gmsh.model.addPhysicalGroup(dim2, [6, 9], tag=1)
+    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="bottom")
+    gmsh.model.addPhysicalGroup(dim2, [5], tag=2)
+    gmsh.model.setPhysicalName(dim=dim2, tag=2, name="top_boundary")
+    gmsh.model.addPhysicalGroup(dim2, [8], tag=3)
+    gmsh.model.setPhysicalName(dim=dim2, tag=3, name="ring")
+    gmsh.model.addPhysicalGroup(dim2, [7], tag=4)
+    gmsh.model.setPhysicalName(dim=dim2, tag=4, name="surface")
 
     gmsh.model.mesh.generate(dim3)
     gmsh.write(fname_noext + ".msh")
