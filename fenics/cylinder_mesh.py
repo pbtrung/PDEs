@@ -48,25 +48,25 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
 
 def gen_cylinder_xdmf(fname_noext):
     mesh, cell_markers, facet_markers = gmshio.read_from_msh(
-        fname_noext + ".msh", MPI.COMM_WORLD, 0, gdim=dim3
+        fname_noext + ".msh", MPI.COMM_WORLD, rank=0, gdim=dim3
     )
     mesh.name = "mesh"
     cell_markers.name = f"{mesh.name}_cells"
     facet_markers.name = f"{mesh.name}_facets"
-    # with XDMFFile(mesh.comm, fname_noext + ".xdmf", "w") as file:
-    #     mesh.topology.create_connectivity(2, 3)
-    #     file.write_mesh(mesh)
-    #     file.write_meshtags(
-    #         cell_markers,
-    #         mesh.geometry,
-    #         geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']/Geometry",
-    #     )
-    #     file.write_meshtags(
-    #         facet_markers,
-    #         mesh.geometry,
-    #         geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']/Geometry",
-    #     )
-    #     print("done!")
+    with XDMFFile(mesh.comm, fname_noext + ".xdmf", "w") as file:
+        mesh.topology.create_connectivity(2, 3)
+        file.write_mesh(mesh)
+        file.write_meshtags(
+            cell_markers,
+            mesh.geometry,
+            geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']/Geometry",
+        )
+        file.write_meshtags(
+            facet_markers,
+            mesh.geometry,
+            geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']/Geometry",
+        )
+        print("done!")
 
 
 if __name__ == "__main__":
