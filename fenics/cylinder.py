@@ -219,9 +219,21 @@ if __name__ == "__main__":
             log(f"1: Took {e-s:.4f}s")
 
         if sys.argv[2] == "ic":
-            solve(mesh, fname=sys.argv[1], cond_type="ic", cell_markers, facet_markers)
+            solve(
+                mesh,
+                fname=sys.argv[1],
+                cond_type="ic",
+                cell_markers=cell_markers,
+                facet_markers=facet_markers,
+            )
         elif sys.argv[2] == "bc":
-            solve(mesh, fname=sys.argv[1], cond_type="bc", cell_markers, facet_markers)
+            solve(
+                mesh,
+                fname=sys.argv[1],
+                cond_type="bc",
+                cell_markers=cell_markers,
+                facet_markers=facet_markers,
+            )
         else:
             print("Wrong condition.")
     else:
