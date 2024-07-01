@@ -84,7 +84,7 @@ def get_diffusivity_field(mesh):
     diffusivity = Function(V)
     x = V.tabulate_dof_coordinates()
     # diffusivity.x.array[:] = np.random.uniform(0.01, 0.02, x.shape[0])
-    diffusivity.x.array[:] = np.full((x.shape[0], 1), 0.02)
+    diffusivity.x.array[:] = np.full((x.shape[0],), 0.02)
 
     return diffusivity
 
