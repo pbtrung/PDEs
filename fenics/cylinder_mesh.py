@@ -11,6 +11,18 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.initialize()
 
     cy = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, r)
+
+    p100 = gmsh.model.occ.addPoint(0, 0, l)
+    p101 = gmsh.model.occ.addPoint(rtop, 0, l)
+    p102 = gmsh.model.occ.addPoint(0, rtop, l)
+    p103 = gmsh.model.occ.addPoint(-rtop, 0, l)
+    p104 = gmsh.model.occ.addPoint(0, -rtop, l)
+
+    c201 = gmsh.model.occ.addCircle([p101, p100, p102])
+    # Circle(201) = {101, 100, 102};
+    # Circle(202) = {102, 100, 103};
+    # Circle(203) = {103, 100, 104};
+    # Circle(204) = {104, 100, 101};
     gmsh.model.occ.synchronize()
 
     # smallest 0.005
@@ -19,8 +31,9 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     # big      0.05
     gmsh.option.setNumber("Mesh.MeshSizeMax", mesh_size_max)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
-    gmsh.model.addPhysicalGroup(dim3, [cy], 1)
-    gmsh.model.setPhysicalName(dim3, 1, "m1")
+
+    gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
+    gmsh.model.setPhysicalName(dim3, tag=1, "cylinder")
     gmsh.model.mesh.generate(dim3)
 
     gmsh.write(fname_noext + ".msh")
