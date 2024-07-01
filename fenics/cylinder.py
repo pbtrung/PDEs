@@ -116,13 +116,13 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
         c_n.interpolate(initial_condition)
     if cond_type == "bc":
         c_top_bc = 1.0
-        top_boundary = 2
+        top_bc_tag = 2
         # top_bc = dirichletbc(
         #     PETSc.ScalarType(c_top_bc), locate_dofs_geometrical(V, top_boundary), V
         # )
         top_bc = dirichletbc(
             PETSc.ScalarType(c_top_bc),
-            locate_dofs_topological(V, dim2, facet_markers.find(top_boundary)),
+            locate_dofs_topological(V, dim2, facet_markers.find(top_bc_tag)),
             V,
         )
         c_n.interpolate(lambda x: np.where(top_boundary(x), c_top_bc, 0.0))
