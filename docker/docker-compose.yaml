@@ -22,3 +22,11 @@ services:
         uid: 10000
         gid: 10000
     image: mfem-cuda:latest
+
+  fenics:
+    build:
+      context: fenics
+      args:
+        uid: 10000
+        gid: 10000
+    image: fenics:latest
