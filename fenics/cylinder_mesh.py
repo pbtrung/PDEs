@@ -19,10 +19,13 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     p104 = gmsh.model.occ.addPoint(0, -rtop, l)
 
     c201 = gmsh.model.occ.addCircleArc(p101, p100, p102)
-    # Circle(201) = {101, 100, 102};
-    # Circle(202) = {102, 100, 103};
-    # Circle(203) = {103, 100, 104};
-    # Circle(204) = {104, 100, 101};
+    c202 = gmsh.model.occ.addCircleArc(p102, p100, p103)
+    c203 = gmsh.model.occ.addCircleArc(p103, p100, p104)
+    c204 = gmsh.model.occ.addCircleArc(p104, p100, p101)
+
+    curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
+    plane = gmsh.model.occ.addPlaneSurface(curve)
+
     gmsh.model.occ.synchronize()
 
     # smallest 0.005
@@ -33,9 +36,12 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
 
     gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
-    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="cylinder")
-    gmsh.model.mesh.generate(dim3)
+    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
 
+    gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
+    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
+
+    gmsh.model.mesh.generate(dim3)
     gmsh.write(fname_noext + ".msh")
     gmsh.finalize()
 
