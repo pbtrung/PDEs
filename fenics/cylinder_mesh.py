@@ -26,7 +26,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
     plane = gmsh.model.occ.addPlaneSurface([curve])
 
-    gmsh.model.occ.cut([(2, 2)], [(2, plane)], removeObject=True, removeTool=False)
+    gmsh.model.occ.cut([(2, 2)], [(2, plane)], removeObject=False, removeTool=True)
     gmsh.model.occ.synchronize()
 
     # smallest 0.005
