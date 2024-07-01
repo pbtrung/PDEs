@@ -16,7 +16,7 @@ from dolfinx.fem import (
     dirichletbc,
     locate_dofs_geometrical,
 )
-from dolfinx.io import XDMFFile
+from dolfinx.io import gmshio, XDMFFile
 
 from vars import *
 
