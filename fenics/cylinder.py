@@ -30,10 +30,9 @@ def log(msg):
 
 
 def get_mesh(fname, comm):
-    mesh, cell_markers, facet_markers = gmshio.read_from_msh(fname + ".msh", comm, 0, gdim=gdim)
-    with XDMFFile(mesh.comm, fname + ".xdmf", "w") as xdmf:
-        xdmf.write_mesh(mesh)
-        print("done!")
+    mesh, cell_markers, facet_markers = gmshio.read_from_msh(
+        fname + ".msh", comm, rank=0, gdim=dim3
+    )
     return mesh, cell_markers, facet_markers
 
 
@@ -61,7 +60,7 @@ def get_velocity_field(mesh):
     # velocity = Constant(mesh, PETSc.ScalarType((v[0], v[1], v[2])))
     # velocity = Constant(mesh, PETSc.ScalarType((0.0, 0.0, -0.2)))
 
-    V = functionspace(mesh, ("DG", 0, (gdim,)))
+    V = functionspace(mesh, ("DG", 0, (dim3,)))
     velocity = Function(V)
     x = V.tabulate_dof_coordinates()
     xy_vec = np.zeros((x.shape[0], 2))
@@ -83,7 +82,26 @@ def get_diffusivity_field(mesh):
     return diffusivity
 
 
-def solve(mesh, fname, cond_type):
+def write_mesh(file, fname, mesh, cell_markers, facet_markers):
+    mesh.name = "mesh"
+    cell_markers.name = f"{mesh.name}_cells"
+    facet_markers.name = f"{mesh.name}_facets"
+
+    mesh.topology.create_connectivity(2, 3)
+    file.write_mesh(mesh)
+    file.write_meshtags(
+        cell_markers,
+        mesh.geometry,
+        geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']/Geometry",
+    )
+    file.write_meshtags(
+        facet_markers,
+        mesh.geometry,
+        geometry_xpath=f"/Xdmf/Domain/Grid[@Name='{mesh.name}']/Geometry",
+    )
+
+
+def solve(mesh, fname, cond_type, cell_markers, facet_markers):
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
@@ -150,7 +168,7 @@ def solve(mesh, fname, cond_type):
     # Solve and save
     s = time.time()
     with XDMFFile(mesh.comm, f"{fname}_results_{cond_type}.xdmf", "w") as file:
-        file.write_mesh(mesh)
+        write_mesh(file, fname, mesh, cell_markers, facet_markers)
 
         diffusivity.name = "diffusivity"
         file.write_function(diffusivity)
@@ -201,9 +219,9 @@ if __name__ == "__main__":
             log(f"1: Took {e-s:.4f}s")
 
         if sys.argv[2] == "ic":
-            solve(mesh, fname=sys.argv[1], cond_type="ic")
+            solve(mesh, fname=sys.argv[1], cond_type="ic", cell_markers, facet_markers)
         elif sys.argv[2] == "bc":
-            solve(mesh, fname=sys.argv[1], cond_type="bc")
+            solve(mesh, fname=sys.argv[1], cond_type="bc", cell_markers, facet_markers)
         else:
             print("Wrong condition.")
     else:
