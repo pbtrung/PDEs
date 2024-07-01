@@ -45,7 +45,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.write(fname_noext + ".msh")
 
     mesh, cell_markers, facet_markers = gmshio.model_to_mesh(
-        gmsh.model, MPI.COMM_WORLD, rank=0, gdim=dim3
+        gmsh.model, MPI.COMM_SELF, rank=0, gdim=dim3
     )
     gmsh.finalize()
 
