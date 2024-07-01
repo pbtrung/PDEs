@@ -18,16 +18,14 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
 
     # smallest 0.005
     # small    0.01
-    # med      0.03
+    # medium   0.03
     # big      0.05
     gmsh.option.setNumber("Mesh.MeshSizeMax", mesh_size_max)
     gmsh.option.setNumber("General.NumThreads", 50)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
 
-    gmsh.model.addPhysicalGroup(dim3, [cy1], tag=1)
-    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="cy1")
-    gmsh.model.addPhysicalGroup(dim3, [cy2], tag=2)
-    gmsh.model.setPhysicalName(dim=dim3, tag=2, name="cy2")
+    gmsh.model.addPhysicalGroup(dim3, [cy1, cy2], tag=1)
+    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="cylinder")
 
     gmsh.model.addPhysicalGroup(dim2, [6, 9], tag=1)
     gmsh.model.setPhysicalName(dim=dim2, tag=1, name="bottom")
