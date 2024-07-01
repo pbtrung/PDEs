@@ -39,6 +39,10 @@ COPY user.mk mfem/config/user.mk
 RUN cd mfem && make config && make -j ${num_jobs} && cd examples && make ex1 && make ex1p \
     && mkdir /usr/local/bin/mfem-examples && cp ex1 ex1p /usr/local/bin/mfem-examples
 RUN cd mfem && make install PREFIX=/usr/local
+
+RUN chmod 644 /usr/local/include/mfem*.hpp
+RUN find /usr/local/include/mfem -type f -exec chmod 644 {} \;
+
 WORKDIR /opt
 RUN rm -rf /opt/archives
 
