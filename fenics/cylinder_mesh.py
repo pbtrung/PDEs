@@ -25,11 +25,8 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
 
     curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
     plane = gmsh.model.occ.addPlaneSurface([curve])
-    ring = gmsh.model.occ.addPlaneSurface([curve])
+    ring = gmsh.model.occ.addPlaneSurface([2, plane])
 
-    test = gmsh.model.occ.addPlaneSurface([2, plane])
-
-    gmsh.model.occ.cut([(2, 2)], [(2, ring)], removeObject=False, removeTool=True)
     gmsh.model.occ.synchronize()
 
     # smallest 0.005
@@ -40,14 +37,14 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.option.setNumber("General.NumThreads", 50)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
 
-    gmsh.model.addPhysicalGroup(dim2, [test], tag=1)
+    gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
     gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
     gmsh.model.addPhysicalGroup(dim2, [1], tag=2)
     gmsh.model.setPhysicalName(dim=dim2, tag=2, name="Side")
     gmsh.model.addPhysicalGroup(dim2, [3], tag=3)
     gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Bottom")
-    # gmsh.model.addPhysicalGroup(dim2, [ring], tag=4)
-    # gmsh.model.setPhysicalName(dim=dim2, tag=4, name="Ring")
+    gmsh.model.addPhysicalGroup(dim2, [ring], tag=4)
+    gmsh.model.setPhysicalName(dim=dim2, tag=4, name="TopRing")
 
     gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
     gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
