@@ -71,7 +71,7 @@ def get_velocity_field(mesh):
     # velocity.x.array[:] = np.hstack([xy_vec, z_vec]).flatten()
 
     xy_vec = np.zeros((x.shape[0], 2))
-    z_vec = np.full((x.shape[0], 1), -0.2)
+    z_vec = np.full((x.shape[0], 1), -0.25)
     velocity.x.array[:] = np.hstack([xy_vec, z_vec]).flatten()
 
     return velocity
