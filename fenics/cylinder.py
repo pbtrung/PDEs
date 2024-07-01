@@ -30,6 +30,8 @@ def log(msg):
 
 
 def get_mesh(fname, comm):
+    with XDMFFile(comm, fname + ".xdmf", "w") as xdmf:
+        print("done!")
     mesh, cell_markers, facet_markers = gmshio.read_from_msh(fname + ".msh", comm, 0, gdim=gdim)
     return mesh, cell_markers, facet_markers
 
