@@ -40,6 +40,8 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
 
     gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
     gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
+    msh.model.addPhysicalGroup(dim2, [1], tag=2)
+    gmsh.model.setPhysicalName(dim=dim2, tag=2, name="Side")
 
     gmsh.model.mesh.generate(dim3)
     gmsh.write(fname_noext + ".msh")
