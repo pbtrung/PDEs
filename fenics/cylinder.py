@@ -15,6 +15,7 @@ from dolfinx.fem import (
     functionspace,
     dirichletbc,
     locate_dofs_geometrical,
+    locate_dofs_topological,
 )
 from dolfinx.io import gmshio, XDMFFile
 
