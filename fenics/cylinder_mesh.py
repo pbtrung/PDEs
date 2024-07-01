@@ -36,7 +36,7 @@ def gen_cylinder_xdmf(fname_noext):
     facet_markers.name = f"{mesh.name}_facets"
     with XDMFFile(mesh.comm, fname_noext + ".xdmf", "w") as file:
         mesh.topology.create_connectivity(2, 3)
-        file.write_mesh(msh)
+        file.write_mesh(mesh)
         file.write_meshtags(
             cell_markers,
             mesh.geometry,
