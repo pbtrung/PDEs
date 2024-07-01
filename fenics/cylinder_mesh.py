@@ -10,22 +10,24 @@ from vars import *
 def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.initialize()
 
-    cy = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, r)
+    cy1 = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, r)
+    cy2 = gmsh.model.occ.addCylinder(0, 0, 0, 0, 0, l, rtop)
+    gmsh.model.occ.cut([(3, cy1)], [(3, cy2)], removeObject=True, removeTool=False)
 
-    p100 = gmsh.model.occ.addPoint(0, 0, l)
-    p101 = gmsh.model.occ.addPoint(rtop, 0, l)
-    p102 = gmsh.model.occ.addPoint(0, rtop, l)
-    p103 = gmsh.model.occ.addPoint(-rtop, 0, l)
-    p104 = gmsh.model.occ.addPoint(0, -rtop, l)
+    # p100 = gmsh.model.occ.addPoint(0, 0, l)
+    # p101 = gmsh.model.occ.addPoint(rtop, 0, l)
+    # p102 = gmsh.model.occ.addPoint(0, rtop, l)
+    # p103 = gmsh.model.occ.addPoint(-rtop, 0, l)
+    # p104 = gmsh.model.occ.addPoint(0, -rtop, l)
 
-    c201 = gmsh.model.occ.addCircleArc(p101, p100, p102)
-    c202 = gmsh.model.occ.addCircleArc(p102, p100, p103)
-    c203 = gmsh.model.occ.addCircleArc(p103, p100, p104)
-    c204 = gmsh.model.occ.addCircleArc(p104, p100, p101)
+    # c201 = gmsh.model.occ.addCircleArc(p101, p100, p102)
+    # c202 = gmsh.model.occ.addCircleArc(p102, p100, p103)
+    # c203 = gmsh.model.occ.addCircleArc(p103, p100, p104)
+    # c204 = gmsh.model.occ.addCircleArc(p104, p100, p101)
 
-    curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
-    plane = gmsh.model.occ.addPlaneSurface([curve])
-    ring = gmsh.model.occ.addPlaneSurface([2, plane])
+    # curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
+    # plane = gmsh.model.occ.addPlaneSurface([curve])
+    # ring = gmsh.model.occ.addPlaneSurface([2, plane])
 
     gmsh.model.occ.synchronize()
 
@@ -37,17 +39,31 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.option.setNumber("General.NumThreads", 50)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
 
-    gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
-    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
-    gmsh.model.addPhysicalGroup(dim2, [ring], tag=2)
-    gmsh.model.setPhysicalName(dim=dim2, tag=2, name="TopRing")
-    gmsh.model.addPhysicalGroup(dim2, [1], tag=3)
-    gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Side")
-    gmsh.model.addPhysicalGroup(dim2, [3], tag=4)
-    gmsh.model.setPhysicalName(dim=dim2, tag=4, name="Bottom")
+    # gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
+    # gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
+    # gmsh.model.addPhysicalGroup(dim2, [ring], tag=2)
+    # gmsh.model.setPhysicalName(dim=dim2, tag=2, name="TopRing")
+    # gmsh.model.addPhysicalGroup(dim2, [1], tag=3)
+    # gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Side")
+    # gmsh.model.addPhysicalGroup(dim2, [3], tag=4)
+    # gmsh.model.setPhysicalName(dim=dim2, tag=4, name="Bottom")
 
-    gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
-    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
+    # boundary_entities = gmsh.model.getEntities(2)
+    # other_boundary_entities = []
+    # for entity in boundary_entities:
+    #     other_boundary_entities.append(entity[1])
+    # gmsh.model.addPhysicalGroup(2, other_boundary_entities, tag=1)
+    # gmsh.model.setPhysicalName(dim=dim2, tag=1, name="boundary")
+
+    gmsh.model.addPhysicalGroup(dim3, [cy1], tag=1)
+    gmsh.model.setPhysicalName(dim=dim3, tag=1, name="cy1")
+    gmsh.model.addPhysicalGroup(dim3, [cy2], tag=2)
+    gmsh.model.setPhysicalName(dim=dim3, tag=2, name="cy2")
+
+    gmsh.model.addPhysicalGroup(dim2, [6], tag=1)
+    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="s1")
+    gmsh.model.addPhysicalGroup(dim2, [9], tag=2)
+    gmsh.model.setPhysicalName(dim=dim2, tag=2, name="s2")
 
     gmsh.model.mesh.generate(dim3)
     gmsh.write(fname_noext + ".msh")
@@ -82,6 +98,6 @@ if __name__ == "__main__":
         fname_noext = sys.argv[1]
         mesh_size_max = float(sys.argv[2])
         gen_cylinder_gmsh(fname_noext, mesh_size_max)
-        # gen_cylinder_xdmf(fname_noext)
+        gen_cylinder_xdmf(fname_noext)
     else:
         print("Must have filename.")
