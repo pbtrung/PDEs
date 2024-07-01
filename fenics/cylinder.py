@@ -122,7 +122,8 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
         top_bc = dirichletbc(PETSc.ScalarType(c_top_bc), bc_dofs, V)
 
         c_n.interpolate(lambda x: np.zeros_like(x[0]))
-        c_n.vector[bc_dofs] = 1.0
+        for dof in bc_dofs:
+            c_n.vector[dof] = 1.0
     e = time.time()
     if rank == 0:
         log(f"2: Took {e-s:.4f}s")
