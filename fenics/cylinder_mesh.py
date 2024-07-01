@@ -26,7 +26,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     curve = gmsh.model.occ.addCurveLoop([c201, c202, c203, c204])
     plane = gmsh.model.occ.addPlaneSurface([curve])
 
-    ring = gmsh.model.occ.cut([(2, 2)], [(2, plane)], removeObject=False, removeTool=False)
+    gmsh.model.occ.cut([(2, 2)], [(2, plane)], removeObject=False, removeTool=False)
     gmsh.model.occ.synchronize()
 
     # smallest 0.005
@@ -45,7 +45,7 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.model.setPhysicalName(dim=dim2, tag=2, name="Side")
     gmsh.model.addPhysicalGroup(dim2, [3], tag=3)
     gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Bottom")
-    gmsh.model.addPhysicalGroup(dim2, [ring], tag=4)
+    gmsh.model.addPhysicalGroup(dim2, [2], tag=4)
     gmsh.model.setPhysicalName(dim=dim2, tag=4, name="Ring")
 
     gmsh.model.mesh.generate(dim3)
