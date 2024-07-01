@@ -123,6 +123,7 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
         top_bc = dirichletbc(
             PETSc.ScalarType(c_top_bc),
             locate_dofs_topological(V, dim2, facet_markers.find(top_boundary)),
+            V,
         )
         c_n.interpolate(lambda x: np.where(top_boundary(x), c_top_bc, 0.0))
     e = time.time()
