@@ -37,24 +37,6 @@ def get_mesh(fname, comm):
     return mesh, cell_markers, facet_markers
 
 
-def top_circle(x):
-    center_x = 0.0
-    center_y = 0.0
-    radius = 0.4
-    distance = np.sqrt((x[0] - center_x) ** 2 + (x[1] - center_y) ** 2)
-    return distance, radius
-
-
-def top_boundary(x):
-    distance, radius = top_circle(x)
-    return np.logical_and(distance <= radius, np.isclose(x[2], l))
-
-
-def initial_condition(x):
-    distance, radius = top_circle(x)
-    return np.where(np.logical_and(distance <= radius, np.isclose(x[2], l)), 1.0, 0.0)
-
-
 def get_velocity_field(mesh):
     # v = np.random.uniform(low=-0.5, high=0.5, size=(3,))
     # v[2] = -v[2] if v[2] >= 0 else v[2]
@@ -118,18 +100,17 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
     # Initial condition
     s = time.time()
     c_n = Function(V)
-    if cond_type == "ic":
-        c_n.interpolate(initial_condition)
-    if cond_type == "bc":
-        c_top_bc = 1.0
-        top_bc_tag = 2
-        bc_dofs = locate_dofs_topological(V, mesh.topology.dim - 1, facet_markers.find(top_bc_tag))
 
+    top_bc_tag = 2
+    c_top_bc = 1.0
+    bc_dofs = locate_dofs_topological(V, mesh.topology.dim - 1, facet_markers.find(top_bc_tag))
+    c_n.interpolate(lambda x: np.zeros_like(x[0]))
+    for dof in bc_dofs:
+        c_n.x.array[bc_dofs] = c_top_bc
+
+    if cond_type == "bc":
         top_bc = dirichletbc(PETSc.ScalarType(c_top_bc), bc_dofs, V)
 
-        c_n.interpolate(lambda x: np.zeros_like(x[0]))
-        for dof in bc_dofs:
-            c_n.x.array[bc_dofs] = c_top_bc
     e = time.time()
     if rank == 0:
         log(f"2: Took {e-s:.4f}s")
