@@ -29,10 +29,9 @@ def log(msg):
     logger.info(msg)
 
 
-def get_mesh(fname):
-    with XDMFFile(MPI.COMM_WORLD, fname + ".xdmf", "r") as file:
-        mesh = file.read_mesh(name="mesh")
-    return mesh
+def get_mesh(fname, comm):
+    mesh, cell_markers, facet_markers = gmshio.read_from_msh(fname + ".msh", comm, 0, gdim=gdim)
+    return mesh, cell_markers, facet_markers
 
 
 def top_circle(x):
@@ -193,7 +192,7 @@ if __name__ == "__main__":
         )
 
         s = time.time()
-        mesh = get_mesh(sys.argv[1])
+        mesh, cell_markers, facet_markers = get_mesh(sys.argv[1], comm)
         e = time.time()
         if rank == 0:
             log(f"1: Took {e-s:.4f}s")
