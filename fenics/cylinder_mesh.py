@@ -34,6 +34,8 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     # small    0.01
     # med      0.03
     # big      0.05
+    gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 2)
+    gmsh.option.setNumber("Mesh.RecombineAll", 1)
     gmsh.option.setNumber("Mesh.MeshSizeMax", mesh_size_max)
     gmsh.option.setNumber("General.NumThreads", 50)
     gmsh.option.setNumber("Mesh.MshFileVersion", 2.2)
@@ -41,14 +43,14 @@ def gen_cylinder_gmsh(fname_noext, mesh_size_max):
     gmsh.model.addPhysicalGroup(dim3, [cy], tag=1)
     gmsh.model.setPhysicalName(dim=dim3, tag=1, name="Cylinder")
 
-    # gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
-    # gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
+    gmsh.model.addPhysicalGroup(dim2, [plane], tag=1)
+    gmsh.model.setPhysicalName(dim=dim2, tag=1, name="TopBoundary")
     gmsh.model.addPhysicalGroup(dim2, [1], tag=2)
     gmsh.model.setPhysicalName(dim=dim2, tag=2, name="Side")
-    gmsh.model.addPhysicalGroup(dim2, [2], tag=3)
-    gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Top")
-    gmsh.model.addPhysicalGroup(dim2, [3], tag=4)
-    gmsh.model.setPhysicalName(dim=dim2, tag=4, name="Bottom")
+    # gmsh.model.addPhysicalGroup(dim2, [2], tag=3)
+    # gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Top")
+    gmsh.model.addPhysicalGroup(dim2, [3], tag=3)
+    gmsh.model.setPhysicalName(dim=dim2, tag=3, name="Bottom")
     gmsh.model.addPhysicalGroup(dim2, [ring], tag=5)
     gmsh.model.setPhysicalName(dim=dim2, tag=5, name="Ring")
 
