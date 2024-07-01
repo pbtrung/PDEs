@@ -82,6 +82,6 @@ if __name__ == "__main__":
         fname_noext = sys.argv[1]
         mesh_size_max = float(sys.argv[2])
         gen_cylinder_gmsh(fname_noext, mesh_size_max)
-        gen_cylinder_xdmf(fname_noext)
+        # gen_cylinder_xdmf(fname_noext)
     else:
         print("Must have filename.")
