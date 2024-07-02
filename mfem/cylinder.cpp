@@ -67,7 +67,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         z.Neg();
         // z.Add(1.0, *b);
         cg.Mult(z, du_dt);
-        du_dt.SetSubVector(ess_tdof_list, 1.0);
+        du_dt.SetSubVector(ess_tdof_list, 0.0);
     }
 
     // virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
