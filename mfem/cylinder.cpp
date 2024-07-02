@@ -158,7 +158,9 @@ int main(int argc, char *argv[]) {
 
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
-    c.ProjectCoefficient(one, ess_tdof_list);
+    c.ProjectBdrCoefficient(one, ess_tdof_list);
+    Vector tmp;
+    c.GetTrueDofs(tmp);
 
     Vector v(3);
     v = 0.0;
