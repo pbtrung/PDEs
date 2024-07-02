@@ -84,10 +84,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
         cg.SetOperator(A);
         Vector B(Mmat->Height());
-        Vector z(x);
-        z.SetSubVector(ess_tdof_list, 1.0);
-        Mmat->Mult(z, B);
+        Mmat->Mult(x, B);
         cg.Mult(B, y);
+
+        y.SetSubVector(ess_tdof_list, 1.0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -205,6 +205,7 @@ int main(int argc, char *argv[]) {
         Vector z(c.Size());
         oper.ImplicitSolve(dt, c, z);
         c_gf.SetFromTrueDofs(z);
+        c = z;
         cout << "2: " << toc() << endl;
         step++;
         if (step == 10) {
