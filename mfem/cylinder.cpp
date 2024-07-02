@@ -203,7 +203,9 @@ int main(int argc, char *argv[]) {
         tic();
         // ode_solver.Step(c, t, dt);
         Vector z(c_gf.Size());
+        cout << c_gf(1000) << endl;
         oper.ImplicitSolve(dt, c_gf, z);
+        cout << z(1000) << endl;
         // c_gf.SetFromTrueDofs(z);
         c_gf = z;
         cout << "2: " << toc() << endl;
