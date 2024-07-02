@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
     ode_solver.Init(oper);
 
     double t = 0.0;
-    double t_final = 5.0;
+    double t_final = 1.0;
     double dt = 0.01;
     int step = 0;
 
@@ -161,9 +161,9 @@ int main(int argc, char *argv[]) {
         ode_solver.Step(c, t, dt);
         cout << "2: " << toc() << endl;
         step++;
-        if (step == 5) {
-            break;
-        }
+        // if (step == 5) {
+        //     break;
+        // }
     }
 
     delete fec;
