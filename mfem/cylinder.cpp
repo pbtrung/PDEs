@@ -16,10 +16,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *K;
     CGSolver cg;
     Array<int> ess_tdof_list;
-    OperatorHandle Mmat, Kmat;
-    ParLinearForm *bform;
-    Vector *b = nullptr;
-    mutable Vector t1, t2;
+    SparseMatrix Mmat, Kmat;
+    // ParLinearForm *bform;
+    // Vector *b = nullptr;
+    // mutable Vector t1, t2;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -32,7 +32,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
-        bform = new ParLinearForm(&fespace);
+        // bform = new ParLinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
@@ -42,42 +42,44 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Array<int> empty;
         K->FormSystemMatrix(empty, Kmat);
         M->FormSystemMatrix(ess_tdof_list, Mmat);
-        bform->Assemble();
-        b = bform->ParallelAssemble();
+        // bform->Assemble();
+        // b = bform->ParallelAssemble();
 
-        t1.SetSize(Mmat->Height());
-        t2.SetSize(Mmat->Height());
+        // t1.SetSize(Mmat->Height());
+        // t2.SetSize(Mmat->Height());
 
-        cg.SetOperator(*Mmat);
+        // cg.SetOperator(*Mmat);
+        // cg.SetRelTol(1e-12);
+        // cg.SetAbsTol(0.0);
+        // cg.SetMaxIter(1000);
+        // cg.SetPrintLevel(0);
+    }
+
+    // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
+    // void Mult(const Vector &u, Vector &du_dt) const override {
+    //     Kmat->Mult(u, t1);
+    //     t1.Add(1.0, *b);
+    //     cg.Mult(t1, du_dt);
+    //     du_dt.SetSubVector(ess_tdof_list, 1.0);
+    // }
+
+    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+        int size = Mmat.Height();
+
+        SparseMatrix A(Mmat);
+        A.Add(dt, Kmat);
+
+        cg.SetOperator(A);
         cg.SetRelTol(1e-12);
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
+        Vector B(size);
+        Mmat.Mult(x, B);
+        cg.Mult(B, y);
+
+        y.SetSubVector(ess_tdof_list, 1.0);
     }
-
-    // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
-    void Mult(const Vector &u, Vector &du_dt) const override {
-        Kmat->Mult(u, t1);
-        t1.Add(1.0, *b);
-        cg.Mult(t1, du_dt);
-        du_dt.SetSubVector(ess_tdof_list, 1.0);
-    }
-
-    // virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-    //     int size = Mmat.Height();
-
-    //     SparseMatrix A(Mmat);
-    //     A.Add(dt, Kmat);
-
-    //     cg.SetOperator(A);
-    //     cg.SetRelTol(1e-12);
-    //     cg.SetAbsTol(0.0);
-    //     cg.SetMaxIter(1000);
-    //     cg.SetPrintLevel(0);
-    //     Vector B(size);
-    //     Mmat.Mult(x, B);
-    //     cg.Mult(B, y);
-    // }
 
     virtual ~ConvectionDiffusionOperator() {
         delete convInteg;
@@ -163,8 +165,8 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient dCoeff(d);
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
-    // BackwardEulerSolver ode_solver;
-    RK3SSPSolver ode_solver;
+    BackwardEulerSolver ode_solver;
+    // RK3SSPSolver ode_solver;
     ode_solver.Init(oper);
 
     double t = 0.0;
