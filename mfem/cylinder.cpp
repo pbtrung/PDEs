@@ -48,7 +48,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetOperator(A);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
-        cg.SetPrintLevel(1);
+        cg.SetPrintLevel(0);
         Vector B(size);
         Mmat.Mult(x, B);
         cg.Mult(B, y);
@@ -162,6 +162,9 @@ int main(int argc, char *argv[]) {
         ode_solver.Step(c, t, dt);
         c.ProjectCoefficient(one, ess_tdof_list);
         step++;
+        if (step == 5) {
+            break;
+        }
     }
 
     delete fec;
