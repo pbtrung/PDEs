@@ -41,8 +41,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble(0);
+        M->Finalize();
         // M->FormSystemMatrix(ess_tdof_list, Mmat);
         K->Assemble(0);
+        K->Finalize();
         // K->FormSystemMatrix(ess_tdof_list, Kmat);
 
         Mmat = M->ParallelAssemble();
