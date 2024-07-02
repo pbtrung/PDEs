@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
     BackwardEulerSolver ode_solver;
     ode_solver.Init(oper);
 
