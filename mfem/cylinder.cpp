@@ -146,8 +146,8 @@ int main(int argc, char *argv[]) {
     }
     cout << "1: " << toc() << endl;
 
-    ParGridFunction c(&fespace);
-    c = 0.0;
+    ParGridFunction c_gf(&fespace);
+    c_gf = 0.0;
 
     // Define the boundary condition
     Array<int> ess_tdof_list;
@@ -158,7 +158,9 @@ int main(int argc, char *argv[]) {
 
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
-    c.ProjectBdrCoefficient(one, ess_bdr);
+    c_gf.ProjectBdrCoefficient(one, ess_bdr);
+    Vector c;
+    c_gf.GetTrueDofs(c);
 
     Vector v(3);
     v = 0.0;
@@ -179,7 +181,7 @@ int main(int argc, char *argv[]) {
 
     ParaViewDataCollection pd("cylinder", &pmesh);
     pd.SetPrefixPath("ParaView");
-    pd.RegisterField("solution", &c);
+    pd.RegisterField("solution", &c_gf);
     pd.SetLevelsOfDetail(order);
     pd.SetDataFormat(VTKFormat::BINARY);
     pd.SetHighOrderOutput(true);
@@ -191,6 +193,7 @@ int main(int argc, char *argv[]) {
 
         tic();
         ode_solver.Step(c, t, dt);
+        c_gf.SetFromTrueDofs(c);
         cout << "2: " << toc() << endl;
         step++;
         if (step == 10) {
