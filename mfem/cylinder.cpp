@@ -60,6 +60,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg_prec.SetType(HypreSmoother::Jacobi);
         cg.SetPreconditioner(cg_prec);
         cg.SetOperator(Mmat);
+
+        z.SetSize(Mmat.Height());
     }
 
     void Mult(const Vector &u, Vector &du_dt) const override {
