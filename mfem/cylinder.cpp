@@ -16,7 +16,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *K;
     Array<int> ess_bdr;
     Array<int> ess_tdof_list;
-    OperatorHandle Mmat, Kmat;
+    SparseMatrix Mmat, Kmat;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -44,7 +44,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        OperatorHandle A = Add(1.0, Mmat, dt, Kmat);
+        SparseMatrix A(Mmat);
+        A.Add(dt, Kmat);
 
         CGSolver cg;
         cg.SetOperator(A);
