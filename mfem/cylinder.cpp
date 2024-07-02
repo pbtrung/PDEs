@@ -15,7 +15,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix Mmat, Kmat;
-    Array<int> ess_tdof_list;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -31,10 +30,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
-        M->FormSystemMatrix(ess_tdof_list, Mmat);
         M->Finalize();
         K->Assemble();
-        M->FormSystemMatrix(ess_tdof_list, Kmat);
         K->Finalize();
     }
 
