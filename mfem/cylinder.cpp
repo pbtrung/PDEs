@@ -14,43 +14,49 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
+    OperatorHandle Mmat, Kmat;
+    OperatorPtr A;
+    CGSolver cg;
+    GSSmoother prec;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff)
-        : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
+                                ConstantCoefficient &dCoeff,
+                                const Array<int> &ess_tdof_list)
+        : TimeDependentOperator(fespace.GetTrueVSize()), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
-        M->AddDomainIntegrator(new MassIntegrator());
+        M->AddDomainIntegrator(new MassIntegrator);
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
+
         M->Assemble();
         M->Finalize();
+        M->FormSystemMatrix(ess_tdof_list, Mmat);
+
         K->Assemble();
         K->Finalize();
-    }
+        K->FormSystemMatrix(ess_tdof_list, Kmat);
 
-    // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
-
-    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        SparseMatrix &Mmat = M->SpMat();
-        SparseMatrix &Kmat = K->SpMat();
-        int size = Mmat.Height();
-
-        SparseMatrix A(Mmat);
-        A.Add(dt, Kmat);
-
-        CGSolver cg;
-        cg.SetOperator(A);
+        A.Reset(Mmat);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(size);
-        Mmat.Mult(x, B);
+        cg.SetPreconditioner(prec);
+        cg.SetOperator(*A.Ptr());
+    }
+
+    virtual void Mult(const Vector &x, Vector &y) const { Kmat->Mult(x, y); }
+
+    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+        A.Reset(Mmat);
+        A->Add(dt, *Kmat);
+        Vector B(Mmat->Height());
+        Mmat->Mult(x, B);
         cg.Mult(B, y);
     }
 
@@ -127,7 +133,7 @@ int main(int argc, char *argv[]) {
 
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
-    c.ProjectBdrCoefficient(one, ess_tdof_list);
+    c.ProjectCoefficient(one, ess_tdof_list);
 
     Vector v(3);
     v = 0.0;
@@ -136,7 +142,7 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
     BackwardEulerSolver ode_solver;
     ode_solver.Init(oper);
 
