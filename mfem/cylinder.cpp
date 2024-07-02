@@ -21,9 +21,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff)
+                                ConstantCoefficient &dCoeff,
+                                Array<int> ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff) {
+          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new BilinearForm(&fespace);
@@ -39,7 +40,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
     }
 
-    virtual void Mult(const Vector &x, Vector &y) const { Kmat->Mult(x, y); }
+    virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         int size = Mmat.Height();
@@ -139,7 +140,7 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
     BackwardEulerSolver ode_solver;
     ode_solver.Init(oper);
 
