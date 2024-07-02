@@ -42,11 +42,11 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(diffInteg);
         M->Assemble(0);
         M->FormSystemMatrix(ess_tdof_list, Mmat);
-        M->Finalize();
+        // M->Finalize();
         K->Assemble(0);
         Array<int> empty;
         K->FormSystemMatrix(empty, Kmat);
-        K->Finalize();
+        // K->Finalize();
 
         bform = new ParLinearForm(&fespace);
         bform->Assemble();
