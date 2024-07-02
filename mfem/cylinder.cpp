@@ -15,6 +15,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     BilinearForm *M;
     BilinearForm *K;
 
+    CGSolver cg;
+    DSmoother A_prec;
+
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
@@ -43,9 +46,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
         SparseMatrix A(Mmat);
         A.Add(dt, Kmat);
-
-        CGSolver cg;
-        DSmoother A_prec;
 
         cg.SetOperator(A);
         cg.SetRelTol(1e-12);
