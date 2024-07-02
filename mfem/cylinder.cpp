@@ -14,6 +14,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
+    HypreParMatrix Mmat, Kmat;
+    Array<int> ess_tdof_list;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -28,25 +30,27 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
-        M->Assemble();
+        M->Assemble(0);
+        M->FormSystemMatrix(ess_tdof_list, Mmat);
         M->Finalize();
-        K->Assemble();
+        K->Assemble(0);
+        K->FormSystemMatrix(ess_tdof_list, Kmat);
         K->Finalize();
     }
 
     virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        HypreParMatrix A(M->SpMat());
-        A.Add(dt, K->SpMat());
+        HypreParMatrix A(Mmat);
+        A.Add(dt, Kmat);
 
         CGSolver cg;
         cg.SetOperator(A);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(M->SpMat().Height());
-        M->SpMat().Mult(x, B);
+        Vector B(Mmat.Height());
+        Mmat.Mult(x, B);
         cg.Mult(B, y);
     }
 
