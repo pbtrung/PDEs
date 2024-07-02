@@ -40,8 +40,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Assemble(0);
 
         Array<int> empty;
-        K.FormSystemMatrix(empty, Kmat);
-        M.FormSystemMatrix(ess_tdof_list, Mmat);
+        K->FormSystemMatrix(empty, Kmat);
+        M->FormSystemMatrix(ess_tdof_list, Mmat);
         bform->Assemble();
         b = bform->ParallelAssemble();
 
