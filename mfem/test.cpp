@@ -69,14 +69,7 @@ int main(int argc, char *argv[]) {
     ess_bdr[top_boundary_attr - 1] = 1;
 
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-
-    // Apply the boundary condition
-    Vector x;
-    c.GetTrueDofs(x);
-    for (int i = 0; i < ess_tdof_list.Size(); i++) {
-        x[ess_tdof_list[i]] = 1.0;
-    }
-    c.SetFromTrueDofs(x);
+    c.ProjectCoefficient(ConstantCoefficient(1.0), ess_bdr);
 
     double t = 0.0;
     double t_final = 5.0;
@@ -98,14 +91,7 @@ int main(int argc, char *argv[]) {
 
         t += dt;
         c = t;
-
-        Vector x;
-        c.GetTrueDofs(x);
-        for (int i = 0; i < ess_tdof_list.Size(); i++) {
-            x[ess_tdof_list[i]] = 1.0;
-        }
-        c.SetFromTrueDofs(x);
-
+        c.ProjectCoefficient(ConstantCoefficient(1.0), ess_bdr);
         step++;
         cout << "2: " << toc() << endl;
         if (step == 5) {
