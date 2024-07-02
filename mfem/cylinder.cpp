@@ -14,17 +14,15 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     BilinearForm *M;
     BilinearForm *K;
-    SparseMatrix Mmat, Kmat;
     CGSolver cg;
-    Array<int> ess_tdof_list;
+    HypreSmoother M_prec;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff,
-                                Array<int> ess_tdof_list)
+                                ConstantCoefficient &dCoeff)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list) {
+          vCoeff(&vCoeff), dCoeff(&dCoeff) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new BilinearForm(&fespace);
@@ -32,17 +30,17 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
-        M->Assemble();
-        M->FormSystemMatrix(ess_tdof_list, Mmat);
+        M->Assemble(0);
         M->Finalize();
-        K->Assemble();
-        K->FormSystemMatrix(ess_tdof_list, Kmat);
+        K->Assemble(0);
         K->Finalize();
     }
 
     virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+        SparseMatrix Mmat = M->SpMat();
+        SparseMatrix Kmat = K->SpMat();
         int size = Mmat.Height();
 
         SparseMatrix A(Mmat);
@@ -53,6 +51,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
+        M_prec.SetType(HypreSmoother::Jacobi);
+        cg.SetPreconditioner(M_prec);
         Vector B(size);
         Mmat.Mult(x, B);
         cg.Mult(B, y);
