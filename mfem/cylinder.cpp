@@ -7,26 +7,26 @@ using namespace mfem;
 
 class ConvectionDiffusionOperator : public TimeDependentOperator {
   private:
-    ParFiniteElementSpace &fespace;
+    FiniteElementSpace &fespace;
     VectorCoefficient *vCoeff;
     ConstantCoefficient *dCoeff;
     ConvectionIntegrator *convInteg;
     DiffusionIntegrator *diffInteg;
-    ParBilinearForm *M;
-    ParBilinearForm *K;
-    HypreParMatrix Mmat, Kmat;
+    BilinearForm *M;
+    BilinearForm *K;
+    SparseMatrix Mmat, Kmat;
     Array<int> ess_tdof_list;
 
   public:
-    ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
+    ConvectionDiffusionOperator(FiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
-        M = new ParBilinearForm(&fespace);
-        K = new ParBilinearForm(&fespace);
+        M = new BilinearForm(&fespace);
+        K = new BilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
@@ -41,7 +41,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        HypreParMatrix A(Mmat);
+        SparseMatrix A(Mmat);
         A.Add(dt, Kmat);
 
         CGSolver cg;
@@ -103,19 +103,19 @@ int main(int argc, char *argv[]) {
              << endl;
     }
 
-    ParMesh pmesh(MPI_COMM_WORLD, mesh);
-    mesh.Clear();
+    // ParMesh pmesh(MPI_COMM_WORLD, mesh);
+    // mesh.Clear();
 
     FiniteElementCollection *fec = new H1_FECollection(order, dim);
 
-    ParFiniteElementSpace fespace(&pmesh, fec);
+    FiniteElementSpace fespace(&mesh, fec);
     HYPRE_BigInt size = fespace.GlobalTrueVSize();
     if (myid == 0) {
         cout << "Number of finite element unknowns: " << size << endl;
     }
     cout << "1: " << toc() << endl;
 
-    ParGridFunction c(&fespace);
+    GridFunction c(&fespace);
     c = 0.0;
 
     // Define the boundary condition
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
     double dt = 0.01;
     int step = 0;
 
-    ParaViewDataCollection pd("cylinder", &pmesh);
+    ParaViewDataCollection pd("cylinder", &mesh);
     pd.SetPrefixPath("ParaView");
     pd.RegisterField("solution", &c);
     pd.SetLevelsOfDetail(order);
