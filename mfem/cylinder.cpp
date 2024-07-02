@@ -67,7 +67,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         z.Neg();
         // z.Add(1.0, *b);
         cg.Mult(z, du_dt);
-        du_dt.SetSubVector(ess_tdof_list, 0.0);
+        // du_dt.SetSubVector(ess_tdof_list, 0.0);
     }
 
     // virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
@@ -159,8 +159,6 @@ int main(int argc, char *argv[]) {
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
     c.ProjectBdrCoefficient(one, ess_bdr);
-    Vector tmp;
-    c.GetTrueDofs(tmp);
 
     Vector v(3);
     v = 0.0;
