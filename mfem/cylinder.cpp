@@ -163,7 +163,8 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient dCoeff(d);
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
-    BackwardEulerSolver ode_solver;
+    // BackwardEulerSolver ode_solver;
+    RK3SSPSolver ode_solver;
     ode_solver.Init(oper);
 
     double t = 0.0;
