@@ -14,49 +14,42 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
-    OperatorHandle Mmat, Kmat;
-    OperatorPtr A;
-    CGSolver cg;
-    GSSmoother prec;
+    HypreParMatrix Mmat, Kmat;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff,
-                                const Array<int> &ess_tdof_list)
-        : TimeDependentOperator(fespace.GetTrueVSize()), fespace(fespace),
+                                ConstantCoefficient &dCoeff, Array<int> ess_tdof_list)
+        : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
-        M->AddDomainIntegrator(new MassIntegrator);
+        M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
-
         M->Assemble();
-        M->Finalize();
         M->FormSystemMatrix(ess_tdof_list, Mmat);
-
+        M->Finalize();
         K->Assemble();
+        M->FormSystemMatrix(ess_tdof_list, Kmat);
         K->Finalize();
-        K->FormSystemMatrix(ess_tdof_list, Kmat);
+    }
 
-        A = Mmat;
+    virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
+
+    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+        HypreParMatrix A(Mmat);
+        A.Add(dt, Kmat);
+
+        CGSolver cg;
+        cg.SetOperator(A);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        cg.SetPreconditioner(prec);
-        cg.SetOperator(*A.Ptr());
-    }
-
-    virtual void Mult(const Vector &x, Vector &y) const { Kmat->Mult(x, y); }
-
-    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        A = Mmat;
-        A->Add(dt, *Kmat);
-        Vector B(Mmat->Height());
-        Mmat->Mult(x, B);
+        Vector B(Mmat.Height());
+        Mmat.Mult(x, B);
         cg.Mult(B, y);
     }
 
