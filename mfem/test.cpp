@@ -40,6 +40,17 @@ int main(int argc, char *argv[]) {
     Mesh mesh(mesh_file, 1, 1);
     int dim = mesh.Dimension();
 
+    int top_boundary_attr = 0;
+    cout << "Boundary attributes:" << endl;
+    for (int i = 0; i < mesh.bdr_attributes.Size(); i++) {
+        cout << "Boundary attribute " << i << ": " << mesh.bdr_attributes[i]
+             << endl;
+        if (mesh.bdr_attributes[i] == "top_boundary") {
+            top_boundary_attr = i;
+            cout << "top_boundary_attr " << top_boundary_attr << endl;
+        }
+    }
+
     ParMesh pmesh(MPI_COMM_WORLD, mesh);
     mesh.Clear();
 
@@ -54,6 +65,22 @@ int main(int argc, char *argv[]) {
 
     ParGridFunction c(&fespace);
     c = 0.0;
+
+    // Define the boundary condition
+    Array<int> ess_tdof_list;
+    Array<int> ess_bdr(fespace.GetMesh()->bdr_attributes.Max());
+    ess_bdr = 0;
+    ess_bdr[top_boundary_attr - 1] = 1;
+
+    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+
+    // Apply the boundary condition
+    Vector x;
+    c.GetTrueDofs(x);
+    for (int i = 0; i < ess_tdof_list.Size(); i++) {
+        x[ess_tdof_list[i]] = 1.0;
+    }
+    c.SetFromTrueDofs(x);
 
     double t = 0.0;
     double t_final = 1.0;
