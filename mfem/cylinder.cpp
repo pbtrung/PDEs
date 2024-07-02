@@ -29,9 +29,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
-        M->Assemble(0);
+        M->Assemble();
         M->Finalize();
-        K->Assemble(0);
+        K->Assemble();
         K->Finalize();
     }
 
