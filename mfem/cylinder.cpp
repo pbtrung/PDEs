@@ -55,6 +55,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         temp = Kmat->EliminateRowsCols(ess_tdof_list);
         delete temp;
 
+        cout << "Kmat " << Kmat.NNZ() << endl;
+        cout << "Mmat " << Mmat.NNZ() << endl;
+
         // bform = new ParLinearForm(&fespace);
         // bform->Assemble();
         // b = bform->ParallelAssemble();2
@@ -80,9 +83,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         HypreParMatrix A(*Mmat);
+        cout << "A(*Mmat) " << A.NNZ() << endl;
         A.Add(dt, *Kmat);
+        cout << "A.Add " << A.NNZ() << endl;
 
         cg.SetOperator(A);
+
         Vector B(Mmat->Height());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
