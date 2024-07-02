@@ -65,7 +65,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     void Mult(const Vector &u, Vector &du_dt) const override {
         Kmat.Mult(u, z);
         z.Neg();
-        z.Add(1.0, *b);
+        // z.Add(1.0, *b);
         cg.Mult(z, du_dt);
         du_dt.SetSubVector(ess_tdof_list, 1.0);
     }
