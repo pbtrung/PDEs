@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 
     Vector v(3);
     v = 0.0;
-    v(2) = -0.25;
+    v(2) = -1;
     double d = 0.02;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
         // t += dt;
         tic();
         ode_solver.Step(c, t, dt);
-        c.ProjectCoefficient(one, ess_tdof_list);
+        // c.ProjectCoefficient(one, ess_tdof_list);
         cout << "2: " << toc() << endl;
         step++;
         if (step == 5) {
