@@ -86,7 +86,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         delete diffInteg;
         delete M;
         delete K;
-        delete bform;
+        // delete bform;
     }
 };
 
