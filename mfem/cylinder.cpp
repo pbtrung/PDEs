@@ -64,8 +64,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     // }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        int size = Mmat.Height();
-
         SparseMatrix A(Mmat->SpMat());
         A.Add(dt, Kmat->SpMat());
 
@@ -74,7 +72,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(size);
+        Vector B(Mmat->Height());
         Mmat.Mult(x, B);
         cg.Mult(B, y);
 
