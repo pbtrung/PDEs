@@ -15,19 +15,14 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix Mmat, Kmat;
-    Array<int> ess_bdr;
     Array<int> ess_tdof_list;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff,
-                                const Array<int> &ess_bdr)
+                                ConstantCoefficient &dCoeff)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
-        this->ess_bdr = ess_bdr;
-        fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
@@ -141,7 +136,7 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_bdr);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff);
     BackwardEulerSolver ode_solver;
     ode_solver.Init(oper);
 
