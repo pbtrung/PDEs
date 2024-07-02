@@ -26,13 +26,13 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
-        M->AddDomainIntegrator(new MassIntegrator);
+        M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
-        M->Finalize();
+        // M->Finalize();
         K->Assemble();
-        K->Finalize();
+        // K->Finalize();
     }
 
     // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
@@ -53,8 +53,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Vector B(size);
         Mmat.Mult(x, B);
         cg.Mult(B, y);
-
-        y.SetSubVector(ess_tdof_list, 1.0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -163,9 +161,10 @@ int main(int argc, char *argv[]) {
         // t += dt;
         tic();
         ode_solver.Step(c, t, dt);
+        c.ProjectCoefficient(one, ess_tdof_list);
         cout << "2: " << toc() << endl;
         step++;
-        if (step == 10) {
+        if (step == 5) {
             break;
         }
     }
