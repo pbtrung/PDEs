@@ -6,13 +6,11 @@ using namespace std;
 using namespace mfem;
 
 int main(int argc, char *argv[]) {
-    // 1. Initialize MPI and HYPRE.
     Mpi::Init();
     int num_procs = Mpi::WorldSize();
     int myid = Mpi::WorldRank();
     Hypre::Init();
 
-    // 2. Parse command-line options.
     const char *mesh_file = "cylinder.msh";
     int order = 1;
     bool pa = false;
@@ -22,6 +20,7 @@ int main(int argc, char *argv[]) {
     OptionsParser args(argc, argv);
     args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
 
+    args.Parse();
     if (!args.Good()) {
         if (myid == 0) {
             args.PrintUsage(cout);
