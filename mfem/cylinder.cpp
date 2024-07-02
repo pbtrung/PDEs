@@ -14,7 +14,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
-    HypreParMatrix Mmat, Kmat;
+    HypreParMatrix *Mmat, *Kmat;
     Array<int> ess_tdof_list;
 
     // ParLinearForm *bform;
@@ -41,13 +41,21 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble(0);
-        M->FormSystemMatrix(ess_tdof_list, Mmat);
+        // M->FormSystemMatrix(ess_tdof_list, Mmat);
         K->Assemble(0);
-        K->FormSystemMatrix(ess_tdof_list, Kmat);
+        // K->FormSystemMatrix(ess_tdof_list, Kmat);
+
+        Mmat = M->ParallelAssemble();
+        HypreParMatrix *temp = Mmat->EliminateRowsCols(ess_tdof_list);
+        delete temp;
+
+        Kmat = K->ParallelAssemble();
+        temp = Kmat->EliminateRowsCols(ess_tdof_list);
+        delete temp;
 
         // bform = new ParLinearForm(&fespace);
         // bform->Assemble();
-        // b = bform->ParallelAssemble();
+        // b = bform->ParallelAssemble();2
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -69,12 +77,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     // }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        HypreParMatrix A(Mmat);
-        A.Add(dt, Kmat);
+        HypreParMatrix A(*Mmat);
+        A.Add(dt, *Kmat);
 
         cg.SetOperator(A);
-        Vector B(Mmat.Height());
-        Mmat.Mult(x, B);
+        Vector B(Mmat->Height());
+        Mmat->Mult(x, B);
         cg.Mult(B, y);
     }
 
@@ -82,6 +90,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         delete convInteg;
         delete diffInteg;
         delete M;
+        delete Mmat;
+        delete Kmat;
         // delete bform;
         delete K;
     }
