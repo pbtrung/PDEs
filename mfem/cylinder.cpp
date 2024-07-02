@@ -15,12 +15,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     BilinearForm *M;
     BilinearForm *K;
     SparseMatrix Mmat, Kmat;
-    Array<int> ess_tdof_list;
+    // Array<int> ess_tdof_list;
 
   public:
     ConvectionDiffusionOperator(FiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff)
+                                ConstantCoefficient &dCoeff, Array<int> ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
         convInteg = new ConvectionIntegrator(vCoeff);
