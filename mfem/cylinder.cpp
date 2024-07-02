@@ -202,10 +202,10 @@ int main(int argc, char *argv[]) {
         t += dt;
         tic();
         // ode_solver.Step(c, t, dt);
-        Vector z(c.Size());
-        oper.ImplicitSolve(dt, c, z);
-        c_gf.SetFromTrueDofs(z);
-        c = z;
+        Vector z(c_gf.Size());
+        oper.ImplicitSolve(dt, c_gf, z);
+        // c_gf.SetFromTrueDofs(z);
+        c_gf = z;
         cout << "2: " << toc() << endl;
         step++;
         if (step == 10) {
