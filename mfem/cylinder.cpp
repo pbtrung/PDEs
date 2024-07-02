@@ -39,7 +39,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
     }
 
-    virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
+    virtual void Mult(const Vector &x, Vector &y) const { Kmat->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         int size = Mmat.Height();
