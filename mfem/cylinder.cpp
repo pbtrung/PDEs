@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
     double dt = 0.01;
     int step = 0;
 
-    ParaViewDataCollection pd("test", &pmesh);
+    ParaViewDataCollection pd("cylinder", &pmesh);
     pd.SetPrefixPath("ParaView");
     pd.RegisterField("solution", &c);
     pd.SetLevelsOfDetail(order);
@@ -153,12 +153,12 @@ int main(int argc, char *argv[]) {
     pd.SetHighOrderOutput(true);
 
     while (t < t_final) {
-        tic();
         pd.SetCycle(step);
         pd.SetTime(t);
         pd.Save();
 
-        t += dt;
+        // t += dt;
+        tic();
         ode_solver.Step(c, t, dt);
         // c.ProjectCoefficient(one, ess_tdof_list);
         cout << "2: " << toc() << endl;
