@@ -109,9 +109,9 @@ int main(int argc, char *argv[]) {
     FiniteElementCollection *fec = new H1_FECollection(order, dim);
 
     FiniteElementSpace fespace(&mesh, fec);
-    HYPRE_BigInt size = fespace.GlobalTrueVSize();
+    // HYPRE_BigInt size = fespace.GlobalTrueVSize();
     if (myid == 0) {
-        cout << "Number of finite element unknowns: " << size << endl;
+        cout << "Number of finite element unknowns: " << fespace.GetTrueVSize() << endl;
     }
     cout << "1: " << toc() << endl;
 
