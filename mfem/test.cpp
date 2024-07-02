@@ -92,11 +92,12 @@ int main(int argc, char *argv[]) {
 
     while (t < t_final) {
         tic();
-        t += dt;
-        c = t;
         pd.SetCycle(step);
         pd.SetTime(t);
         pd.Save();
+
+        t += dt;
+        c = t;
         step++;
         cout << "2: " << toc() << endl;
         if (step == 5) {
