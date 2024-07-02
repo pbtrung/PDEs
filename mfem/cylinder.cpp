@@ -15,14 +15,19 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix Mmat, Kmat;
+    Array<int> ess_bdr;
+    Array<int> ess_tdof_list;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
-                                const Array<int> &ess_tdof_list)
+                                const Array<int> &ess_bdr)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
+        this->ess_bdr = ess_bdr;
+        fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
