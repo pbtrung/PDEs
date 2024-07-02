@@ -17,14 +17,14 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     HypreParMatrix Mmat, Kmat;
     Array<int> ess_tdof_list;
 
-    ParLinearForm *bform;
-    Vector *b = nullptr;
+    // ParLinearForm *bform;
+    // Vector *b = nullptr;
 
     CGSolver cg;
     HypreSmoother cg_prec;
 
     // Auxiliary vectors
-    mutable Vector z;
+    // mutable Vector z;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -46,9 +46,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Array<int> empty;
         K->FormSystemMatrix(empty, Kmat);
 
-        bform = new ParLinearForm(&fespace);
-        bform->Assemble();
-        b = bform->ParallelAssemble();
+        // bform = new ParLinearForm(&fespace);
+        // bform->Assemble();
+        // b = bform->ParallelAssemble();
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -57,38 +57,33 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetPrintLevel(0);
         cg_prec.SetType(HypreSmoother::Jacobi);
         cg.SetPreconditioner(cg_prec);
-        cg.SetOperator(Mmat);
 
-        z.SetSize(Mmat.Height());
+        // z.SetSize(Mmat.Height());
     }
 
-    void Mult(const Vector &u, Vector &du_dt) const override {
-        Kmat.Mult(u, z);
-        z.Neg();
-        // z.Add(1.0, *b);
-        cg.Mult(z, du_dt);
-        // du_dt.SetSubVector(ess_tdof_list, 0.0);
-    }
-
-    // virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-    //     HypreParMatrix A(Mmat);
-    //     A.Add(dt, Kmat);
-
-    //     CGSolver cg;
-    //     cg.SetOperator(A);
-    //     cg.SetRelTol(1e-12);
-    //     cg.SetMaxIter(1000);
-    //     cg.SetPrintLevel(0);
-    //     Vector B(Mmat.Height());
-    //     Mmat.Mult(x, B);
-    //     cg.Mult(B, y);
+    // void Mult(const Vector &u, Vector &du_dt) const override {
+    //     Kmat.Mult(u, z);
+    //     z.Neg();
+    //     z.Add(1.0, *b);
+    //     cg.Mult(z, du_dt);
+    //     du_dt.SetSubVector(ess_tdof_list, 0.0);
     // }
+
+    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+        HypreParMatrix A(Mmat);
+        A.Add(dt, Kmat);
+
+        cg.SetOperator(A);
+        Vector B(Mmat.Height());
+        Mmat.Mult(x, B);
+        cg.Mult(B, y);
+    }
 
     virtual ~ConvectionDiffusionOperator() {
         delete convInteg;
         delete diffInteg;
         delete M;
-        delete bform;
+        // delete bform;
         delete K;
     }
 };
@@ -170,8 +165,8 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient dCoeff(d);
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
-    // BackwardEulerSolver ode_solver;
-    RK3SSPSolver ode_solver;
+    BackwardEulerSolver ode_solver;
+    // RK3SSPSolver ode_solver;
     ode_solver.Init(oper);
 
     double t = 0.0;
