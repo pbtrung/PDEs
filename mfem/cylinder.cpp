@@ -42,7 +42,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
         K->FormSystemMatrix(ess_tdof_list, Kmat);
 
-        A.Reset(Mmat);
+        A = Mmat;
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
@@ -53,7 +53,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     virtual void Mult(const Vector &x, Vector &y) const { Kmat->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        A.Reset(Mmat);
+        A = Mmat;
         A->Add(dt, *Kmat);
         Vector B(Mmat->Height());
         Mmat->Mult(x, B);
