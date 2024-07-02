@@ -25,7 +25,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new BilinearForm(&fespace);
         K = new BilinearForm(&fespace);
-        M->AddDomainIntegrator(new MassIntegrator);
+        ConstantCoefficient one(1.0);
+        M->AddDomainIntegrator(new MassIntegrator(one));
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
