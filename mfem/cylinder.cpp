@@ -12,21 +12,31 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ConstantCoefficient *dCoeff;
     ConvectionIntegrator *convInteg;
     DiffusionIntegrator *diffInteg;
-    BilinearForm *M;
-    BilinearForm *K;
-    SparseMatrix Mmat, Kmat;
-    // Array<int> ess_tdof_list;
+    ParBilinearForm *M;
+    ParBilinearForm *K;
+    HypreParMatrix Mmat, Kmat;
+    Array<int> ess_tdof_list;
+
+    ParLinearForm *bform;
+    Vector *b = nullptr;
+
+    CGSolver cg;
+    HypreSmoother cg_prec;
+
+    // Auxiliary vectors
+    mutable Vector z;
 
   public:
     ConvectionDiffusionOperator(FiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff, Array<int> ess_tdof_list)
+                                ConstantCoefficient &dCoeff,
+                                Array<int> ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff) {
+          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
-        M = new BilinearForm(&fespace);
-        K = new BilinearForm(&fespace);
+        M = new ParBilinearForm(&fespace);
+        K = new ParBilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
@@ -34,30 +44,50 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         M->FormSystemMatrix(ess_tdof_list, Mmat);
         M->Finalize();
         K->Assemble(0);
-        K->FormSystemMatrix(ess_tdof_list, Kmat);
+        Array<int> empty;
+        K->FormSystemMatrix(empty, Kmat);
         K->Finalize();
-    }
 
-    virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
+        bform = new ParLinearForm(&fespace);
+        bform.Assemble();
+        b = bform.ParallelAssemble();
 
-    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        SparseMatrix A(Mmat);
-        A.Add(dt, Kmat);
-
-        CGSolver cg;
-        cg.SetOperator(A);
+        cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
+        cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(Mmat.Height());
-        Mmat.Mult(x, B);
-        cg.Mult(B, y);
+        cg_prec.SetType(HypreSmoother::Jacobi);
+        cg.SetPreconditioner(cg_prec);
+        cg.SetOperator(Mmat);
     }
+
+    void Mult(const Vector &u, Vector &du_dt) const override {
+        Kmat->Mult(u, z);
+        z.Add(1.0, *b);
+        cg.Mult(z, du_dt);
+        du_dt.SetSubVector(ess_tdof_list, 1.0);
+    }
+
+    // virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+    //     HypreParMatrix A(Mmat);
+    //     A.Add(dt, Kmat);
+
+    //     CGSolver cg;
+    //     cg.SetOperator(A);
+    //     cg.SetRelTol(1e-12);
+    //     cg.SetMaxIter(1000);
+    //     cg.SetPrintLevel(0);
+    //     Vector B(Mmat.Height());
+    //     Mmat.Mult(x, B);
+    //     cg.Mult(B, y);
+    // }
 
     virtual ~ConvectionDiffusionOperator() {
         delete convInteg;
         delete diffInteg;
         delete M;
+        delete bform;
         delete K;
     }
 };
@@ -103,19 +133,19 @@ int main(int argc, char *argv[]) {
              << endl;
     }
 
-    // ParMesh pmesh(MPI_COMM_WORLD, mesh);
-    // mesh.Clear();
+    ParMesh pmesh(MPI_COMM_WORLD, mesh);
+    mesh.Clear();
 
     FiniteElementCollection *fec = new H1_FECollection(order, dim);
 
-    FiniteElementSpace fespace(&mesh, fec);
-    // HYPRE_BigInt size = fespace.GlobalTrueVSize();
+    ParFiniteElementSpace fespace(&pmesh, fec);
+    HYPRE_BigInt size = fespace.GlobalTrueVSize();
     if (myid == 0) {
-        cout << "Number of finite element unknowns: " << fespace.GetTrueVSize() << endl;
+        cout << "Number of finite element unknowns: " << size << endl;
     }
     cout << "1: " << toc() << endl;
 
-    GridFunction c(&fespace);
+    ParGridFunction c(&fespace);
     c = 0.0;
 
     // Define the boundary condition
@@ -137,7 +167,8 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient dCoeff(d);
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
-    BackwardEulerSolver ode_solver;
+    // BackwardEulerSolver ode_solver;
+    RK3SSPSolver ode_solver;
     ode_solver.Init(oper);
 
     double t = 0.0;
@@ -145,7 +176,7 @@ int main(int argc, char *argv[]) {
     double dt = 0.01;
     int step = 0;
 
-    ParaViewDataCollection pd("cylinder", &mesh);
+    ParaViewDataCollection pd("cylinder", &pmesh);
     pd.SetPrefixPath("ParaView");
     pd.RegisterField("solution", &c);
     pd.SetLevelsOfDetail(order);
