@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
         device.Print();
     }
 
+    tic();
     Mesh mesh(mesh_file, 1, 1);
     int dim = mesh.Dimension();
 
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
     if (myid == 0) {
         cout << "Number of finite element unknowns: " << size << endl;
     }
+    cout << "1: " << toc() << endl;
 
     ParGridFunction c(&fespace);
     c = 0.0;
@@ -66,12 +68,14 @@ int main(int argc, char *argv[]) {
     pd.SetHighOrderOutput(true);
 
     while (t < t_final) {
+        tic();
         t += dt;
         c = t;
         pd.SetCycle(step);
         pd.SetTime(t);
         pd.Save();
         step++;
+        cout << "2: " << toc() << endl;
     }
 
     delete fec;
