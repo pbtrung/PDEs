@@ -47,17 +47,18 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
         t1.SetSize(Mmat->Height());
         t2.SetSize(Mmat->Height());
+
+        cg.SetOperator(*Mmat);
+        cg.SetRelTol(1e-12);
+        cg.SetAbsTol(0.0);
+        cg.SetMaxIter(1000);
+        cg.SetPrintLevel(0);
     }
 
     // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
     void Mult(const Vector &u, Vector &du_dt) const override {
         Kmat->Mult(u, t1);
         t1.Add(1.0, *b);
-        cg.SetOperator(*Mmat);
-        cg.SetRelTol(1e-12);
-        cg.SetAbsTol(0.0);
-        cg.SetMaxIter(1000);
-        cg.SetPrintLevel(0);
         cg.Mult(t1, du_dt);
         du_dt.SetSubVector(ess_tdof_list, 1.0);
     }
