@@ -44,16 +44,16 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        SparseMatrix A(Mmat.As(Operator::MFEM_SPARSEMAT));
-        A.Add(dt, Kmat.As(Operator::MFEM_SPARSEMAT));
+        SparseMatrix A(Mmat.As());
+        A.Add(dt, Kmat.As());
 
         CGSolver cg;
         cg.SetOperator(A);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(Mmat->Height());
-        Mmat->Mult(x, B);
+        Vector B(Mmat.Height());
+        Mmat.Mult(x, B);
         cg.Mult(B, y);
     }
 
