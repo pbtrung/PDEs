@@ -21,8 +21,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 ConstantCoefficient &dCoeff)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
-        convInteg = new ConvectionIntegrator(*vCoeff);
-        diffInteg = new DiffusionIntegrator(*dCoeff);
+        convInteg = new ConvectionIntegrator(vCoeff);
+        diffInteg = new DiffusionIntegrator(dCoeff);
         M = new BilinearForm(&fespace);
         K = new BilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator);
@@ -129,7 +129,8 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient one(1.0);
     c.ProjectCoefficient(one, ess_tdof_list);
 
-    Vector v{0.0, 0.0, -0.25};
+    Vector v(3);
+    v = {0.0, 0.0, -0.25};
     double d = 0.02;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
