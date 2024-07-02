@@ -50,7 +50,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         A->Add(dt, Kmat);
 
         CGSolver cg;
-        cg.SetOperator(A);
+        cg.SetOperator(*A);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
