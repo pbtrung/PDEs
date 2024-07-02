@@ -63,7 +63,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     }
 
     void Mult(const Vector &u, Vector &du_dt) const override {
-        Kmat->Mult(u, z);
+        Kmat.Mult(u, z);
         z.Add(1.0, *b);
         cg.Mult(z, du_dt);
         du_dt.SetSubVector(ess_tdof_list, 1.0);
@@ -192,9 +192,9 @@ int main(int argc, char *argv[]) {
         ode_solver.Step(c, t, dt);
         cout << "2: " << toc() << endl;
         step++;
-        // if (step == 5) {
-        //     break;
-        // }
+        if (step == 10) {
+            break;
+        }
     }
 
     delete fec;
