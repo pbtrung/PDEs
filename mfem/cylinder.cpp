@@ -49,8 +49,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
 
         bform = new ParLinearForm(&fespace);
-        bform.Assemble();
-        b = bform.ParallelAssemble();
+        bform->Assemble();
+        b = bform->ParallelAssemble();
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
