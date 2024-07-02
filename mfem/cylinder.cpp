@@ -130,7 +130,8 @@ int main(int argc, char *argv[]) {
     c.ProjectCoefficient(one, ess_tdof_list);
 
     Vector v(3);
-    v = {0.0, 0.0, -0.25};
+    v = 0.0;
+    v(2) = -0.25;
     double d = 0.02;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
