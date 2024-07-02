@@ -27,7 +27,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     mutable Vector z;
 
   public:
-    ConvectionDiffusionOperator(FiniteElementSpace &fespace,
+    ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
                                 Array<int> ess_tdof_list)
