@@ -178,9 +178,9 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient dCoeff(d);
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
-    BackwardEulerSolver ode_solver;
+    // BackwardEulerSolver ode_solver;
     // RK3SSPSolver ode_solver;
-    ode_solver.Init(oper);
+    // ode_solver.Init(oper);
 
     double t = 0.0;
     double t_final = 1.0;
@@ -199,9 +199,12 @@ int main(int argc, char *argv[]) {
         pd.SetTime(t);
         pd.Save();
 
+        t += dt;
         tic();
-        ode_solver.Step(c, t, dt);
-        c_gf.SetFromTrueDofs(c);
+        // ode_solver.Step(c, t, dt);
+        Vector z(c.Size());
+        oper.ImplicitSolve(dt, c, z);
+        c_gf.SetFromTrueDofs(z);
         cout << "2: " << toc() << endl;
         step++;
         if (step == 10) {
