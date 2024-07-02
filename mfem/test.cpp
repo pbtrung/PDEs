@@ -59,22 +59,21 @@ int main(int argc, char *argv[]) {
     int step = 0;
 
     ParaViewDataCollection pd("test", &pmesh);
-    pd->SetPrefixPath("ParaView");
-    pd->RegisterField("solution", &c);
-    pd->SetLevelsOfDetail(order);
-    pd->SetDataFormat(VTKFormat::BINARY);
-    pd->SetHighOrderOutput(true);
+    pd.SetPrefixPath("ParaView");
+    pd.RegisterField("solution", &c);
+    pd.SetLevelsOfDetail(order);
+    pd.SetDataFormat(VTKFormat::BINARY);
+    pd.SetHighOrderOutput(true);
 
     while (t < t_final) {
         t += dt;
         c = t;
-        pd->SetCycle(step);
-        pd->SetTime(t);
-        pd->Save();
+        pd.SetCycle(step);
+        pd.SetTime(t);
+        pd.Save();
         step++;
     }
 
     delete fec;
-    delete pd;
     return 0;
 }
