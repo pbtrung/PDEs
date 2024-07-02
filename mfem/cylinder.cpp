@@ -25,8 +25,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new BilinearForm(&fespace);
         K = new BilinearForm(&fespace);
-        ConstantCoefficient one(1.0);
-        M->AddDomainIntegrator(new MassIntegrator(one));
+        M->AddDomainIntegrator(new MassIntegrator);
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
@@ -161,10 +160,10 @@ int main(int argc, char *argv[]) {
 
         t += dt;
         ode_solver.Step(c, t, dt);
-        c.ProjectCoefficient(one, ess_tdof_list);
+        // c.ProjectCoefficient(one, ess_tdof_list);
         cout << "2: " << toc() << endl;
         step++;
-        if (step == 5) {
+        if (step == 10) {
             break;
         }
     }
