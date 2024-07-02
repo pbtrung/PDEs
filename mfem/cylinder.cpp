@@ -42,11 +42,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(diffInteg);
         M->Assemble(0);
         M->FormSystemMatrix(ess_tdof_list, Mmat);
-        // M->Finalize();
         K->Assemble(0);
         Array<int> empty;
         K->FormSystemMatrix(empty, Kmat);
-        // K->Finalize();
 
         bform = new ParLinearForm(&fespace);
         bform->Assemble();
@@ -66,6 +64,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
     void Mult(const Vector &u, Vector &du_dt) const override {
         Kmat.Mult(u, z);
+        z.Neg();
         z.Add(1.0, *b);
         cg.Mult(z, du_dt);
         du_dt.SetSubVector(ess_tdof_list, 1.0);
