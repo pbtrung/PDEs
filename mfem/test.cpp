@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
-    c.ProjectCoefficient(one, ess_bdr);
+    c.ProjectCoefficient(one, ess_tdof_list);
 
     double t = 0.0;
     double t_final = 5.0;
@@ -92,7 +92,9 @@ int main(int argc, char *argv[]) {
 
         t += dt;
         c = t;
-        c.ProjectCoefficient(one, ess_bdr);
+
+        c.ProjectCoefficient(one, ess_tdof_list);
+
         step++;
         cout << "2: " << toc() << endl;
         if (step == 5) {
