@@ -43,7 +43,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         int size = Mmat.Height();
 
         SparseMatrix A(Mmat);
-        A.Add(-dt, Kmat);
+        A.Add(dt, Kmat);
 
         CGSolver cg;
         cg.SetOperator(A);
