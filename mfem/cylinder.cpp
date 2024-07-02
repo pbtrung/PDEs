@@ -14,7 +14,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     BilinearForm *M;
     BilinearForm *K;
+    SparseMatrix Mmat, Kmat;
     CGSolver cg;
+    Array<int> ess_tdof_list;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -30,16 +32,16 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
+        M->FormSystemMatrix(ess_tdof_list, Mmat);
         M->Finalize();
         K->Assemble();
+        K->FormSystemMatrix(ess_tdof_list, Kmat);
         K->Finalize();
     }
 
     virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        SparseMatrix &Mmat = M->SpMat();
-        SparseMatrix &Kmat = K->SpMat();
         int size = Mmat.Height();
 
         SparseMatrix A(Mmat);
