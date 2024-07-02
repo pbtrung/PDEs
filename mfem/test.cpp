@@ -76,6 +76,9 @@ int main(int argc, char *argv[]) {
         pd.Save();
         step++;
         cout << "2: " << toc() << endl;
+        if (step == 10) {
+            break;
+        }
     }
 
     delete fec;
