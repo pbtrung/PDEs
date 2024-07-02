@@ -52,8 +52,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(Mmat->Height());
-        Mmat->Mult(x, B);
+        Vector B(Mmat.Height());
+        Mmat.Mult(x, B);
         cg.Mult(B, y);
     }
 
