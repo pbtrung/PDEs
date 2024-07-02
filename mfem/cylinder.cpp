@@ -25,7 +25,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new BilinearForm(&fespace);
         K = new BilinearForm(&fespace);
-        M->AddDomainIntegrator(new MassIntegrator);
+        M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
@@ -45,10 +45,14 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         A.Add(dt, Kmat);
 
         CGSolver cg;
+        DSmoother A_prec;
+
         cg.SetOperator(A);
         cg.SetRelTol(1e-12);
+        cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
+        cg.SetPreconditioner(A_prec);
         Vector B(size);
         Mmat.Mult(x, B);
         cg.Mult(B, y);
