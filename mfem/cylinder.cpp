@@ -38,7 +38,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         HypreParMatrix A(M->SpMat());
-        A.Add(dt, Kmat->SpMat());
+        A.Add(dt, K->SpMat());
 
         CGSolver cg;
         cg.SetOperator(A);
