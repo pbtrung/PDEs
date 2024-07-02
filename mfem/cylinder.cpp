@@ -14,9 +14,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     BilinearForm *M;
     BilinearForm *K;
-
     CGSolver cg;
-    DSmoother A_prec;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -52,7 +50,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        cg.SetPreconditioner(A_prec);
         Vector B(size);
         Mmat.Mult(x, B);
         cg.Mult(B, y);
