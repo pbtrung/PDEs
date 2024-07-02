@@ -14,20 +14,13 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
-    Array<int> ess_bdr;
-    Array<int> ess_tdof_list;
-    OperatorHandle Mmat, Kmat;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff,
-                                Array<int> &ess_bdr)
+                                ConstantCoefficient &dCoeff)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff) {
-        this->ess_bdr = ess_bdr;
-        fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
@@ -36,26 +29,28 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(convInteg);
         K->AddDomainIntegrator(diffInteg);
         M->Assemble();
-        M->FormSystemMatrix(ess_tdof_list, Mmat);
         M->Finalize();
         K->Assemble();
-        K->FormSystemMatrix(ess_tdof_list, Kmat);
         K->Finalize();
     }
 
     // virtual void Mult(const Vector &x, Vector &y) const { K->Mult(x, y); }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        OperatorHandle A(Mmat);
-        A->Add(dt, Kmat);
+        SparseMatrix &Mmat = M->SpMat();
+        SparseMatrix &Kmat = K->SpMat();
+        int size = Mmat.Height();
+
+        SparseMatrix A(Mmat);
+        A.Add(dt, Kmat);
 
         CGSolver cg;
-        cg.SetOperator(*A);
+        cg.SetOperator(A);
         cg.SetRelTol(1e-12);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(0);
-        Vector B(Mmat->Height());
-        Mmat->Mult(x, B);
+        Vector B(size);
+        Mmat.Mult(x, B);
         cg.Mult(B, y);
     }
 
@@ -141,7 +136,7 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_bdr);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff);
     BackwardEulerSolver ode_solver;
     ode_solver.Init(oper);
 
@@ -164,7 +159,6 @@ int main(int argc, char *argv[]) {
 
         tic();
         ode_solver.Step(c, t, dt);
-        // c.ProjectCoefficient(one, ess_tdof_list);
         cout << "2: " << toc() << endl;
         step++;
         if (step == 5) {
