@@ -63,7 +63,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetRelTol(1e-12);
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
-        cg.SetPrintLevel(0);
+        cg.SetPrintLevel(1);
         cg_prec.SetType(HypreSmoother::Jacobi);
         cg.SetPreconditioner(cg_prec);
 
