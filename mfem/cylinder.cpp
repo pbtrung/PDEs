@@ -17,7 +17,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     CGSolver cg;
     Array<int> ess_tdof_list;
     OperatorHandle Mmat, Kmat;
-    ParLinearForm bform;
+    ParLinearForm *bform;
     Vector *b = nullptr;
     mutable Vector t1, t2;
 
@@ -42,8 +42,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Array<int> empty;
         K.FormSystemMatrix(empty, Kmat);
         M.FormSystemMatrix(ess_tdof_list, Mmat);
-        bform.Assemble();
-        b = bform.ParallelAssemble();
+        bform->Assemble();
+        b = bform->ParallelAssemble();
 
         t1.SetSize(Mmat->Height());
         t2.SetSize(Mmat->Height());
@@ -83,6 +83,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         delete diffInteg;
         delete M;
         delete K;
+        delete bform;
     }
 };
 
