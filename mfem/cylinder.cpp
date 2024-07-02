@@ -161,6 +161,7 @@ int main(int argc, char *argv[]) {
         t += dt;
         ode_solver.Step(c, t, dt);
         c.ProjectCoefficient(one, ess_tdof_list);
+        cout << "2: " << toc() << endl;
         step++;
         if (step == 5) {
             break;
