@@ -55,8 +55,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         temp = Kmat->EliminateRowsCols(ess_tdof_list);
         delete temp;
 
-        cout << "Kmat " << Kmat.NNZ() << endl;
-        cout << "Mmat " << Mmat.NNZ() << endl;
+        cout << "Kmat " << Kmat->NNZ() << endl;
+        cout << "Mmat " << Mmat->NNZ() << endl;
 
         // bform = new ParLinearForm(&fespace);
         // bform->Assemble();
