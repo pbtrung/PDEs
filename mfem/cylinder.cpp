@@ -6,7 +6,7 @@ using namespace std;
 using namespace mfem;
 
 class ConvectionDiffusionOperator : public TimeDependentOperator {
-private:
+  private:
     FiniteElementSpace &fespace;
     VectorCoefficient *vCoeff;
     ConstantCoefficient *dCoeff;
@@ -20,7 +20,7 @@ private:
     CGSolver cg;
     HypreSmoother cg_prec;
 
-public:
+  public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
@@ -118,7 +118,8 @@ int main(int argc, char *argv[]) {
 
     cout << "Boundary attributes:" << endl;
     for (int i = 0; i < mesh.bdr_attributes.Size(); i++) {
-        cout << "Boundary attribute " << i << ": " << mesh.bdr_attributes[i] << endl;
+        cout << "Boundary attribute " << i << ": " << mesh.bdr_attributes[i]
+             << endl;
     }
 
     ParMesh pmesh(MPI_COMM_WORLD, mesh);
@@ -136,6 +137,7 @@ int main(int argc, char *argv[]) {
     c_gf = 0.0;
 
     // Define the boundary condition
+    Array<int> ess_tdof_list;
     Array<int> ess_bdr(fespace.GetMesh()->bdr_attributes.Max());
     ess_bdr = 0;
     int top_boundary_attr = 2;
