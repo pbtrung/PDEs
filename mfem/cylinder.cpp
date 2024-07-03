@@ -17,9 +17,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     CGSolver cg;
     HypreSmoother prec;
 
-    // auxiliary vector
-    mutable Vector z;
-
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
@@ -54,18 +51,13 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        // HypreParMatrix A(*Mmat);
-        // A.Add(dt, *Kmat);
-        // cg.SetOperator(A);
-        // Vector B(x.Size());
-        // Mmat->Mult(x, B);
-        // cg.Mult(B, y);
-        // y.SetSubVector(ess_tdof_list, c0);
-        z.SetSize(x.Size());
-        Kmat->Mult(x, z);
-        z.Neg();
-        cg.SetOperator(*Mmat);
-        cg.Mult(z, y);
+        HypreParMatrix A(*Mmat);
+        A.Add(dt, *Kmat);
+        cg.SetOperator(A);
+        Vector B(x.Size());
+        Mmat->Mult(x, B);
+        cg.Mult(B, y);
+        y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -169,9 +161,7 @@ int main(int argc, char *argv[]) {
 
         // t += dt;
         tic();
-        // oper.ImplicitSolve(dt, c, c);
-        be_solver.Step(u, t, dt);
-        u.SetSubVector(ess_tdof_list, c0);
+        oper.ImplicitSolve(dt, u, u);
         c.SetFromTrueDofs(u);
         step++;
 
