@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
                                      c0);
 
     double t = 0.0;
-    double t_final = 1.01;
     double dt = 0.01;
+    double t_final = 5.0 + dt;
     int step = 0;
 
     Vector u;
@@ -173,8 +173,6 @@ int main(int argc, char *argv[]) {
         // }
     }
 
-    Mpi::Finalize();
-    Hypre::Finalize();
     delete fec;
     return 0;
 }
