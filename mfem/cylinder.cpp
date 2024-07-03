@@ -156,7 +156,9 @@ int main(int argc, char *argv[]) {
 
         t += dt;
         tic();
-        oper.ImplicitSolve(dt, c, c);
+        Vector z(c.Size());
+        oper.ImplicitSolve(dt, c, z);
+        c = z;
         cout << "2: " << toc() << endl;
         step++;
 
