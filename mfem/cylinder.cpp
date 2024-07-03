@@ -40,12 +40,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
 
         Mmat = M->ParallelAssemble();
-        // HypreParMatrix *temp = Mmat->EliminateRowsCols(ess_tdof_list);
-        // delete temp;
-
         Kmat = K->ParallelAssemble();
-        // temp = Kmat->EliminateRowsCols(ess_tdof_list);
-        // delete temp;
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -59,7 +54,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
-
         cg.SetOperator(A);
         Vector B(x.Size());
         Mmat->Mult(x, B);
@@ -171,10 +165,7 @@ int main(int argc, char *argv[]) {
         t += dt;
         tic();
         oper.ImplicitSolve(dt, c, c);
-        if (myid == 0) {
-            cout << "Step " << step << ", Time " << t
-                 << ", Norm of solution: " << c.Norml2() << endl;
-        }
+        c.ProjectBdrCoefficient(one, ess_bdr);
         cout << "2: " << toc() << endl;
 
         step++;
