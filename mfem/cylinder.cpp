@@ -128,8 +128,8 @@ int main(int argc, char *argv[]) {
     }
     cout << "1: " << toc() << endl;
 
-    ParGridFunction c_gf(&fespace);
-    c_gf = 0.0;
+    ParGridFunction c(&fespace);
+    c = 0.0;
 
     // Define the boundary condition
     Array<int> ess_tdof_list;
@@ -140,9 +140,7 @@ int main(int argc, char *argv[]) {
 
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
-    c_gf.ProjectBdrCoefficient(one, ess_bdr);
-    Vector c;
-    c_gf.GetTrueDofs(c);
+    c.ProjectBdrCoefficient(one, ess_bdr);
 
     Vector v(3);
     v = 0.0;
@@ -161,7 +159,7 @@ int main(int argc, char *argv[]) {
 
     ParaViewDataCollection pd("cylinder", &pmesh);
     pd.SetPrefixPath("ParaView");
-    pd.RegisterField("solution", &c_gf);
+    pd.RegisterField("solution", &c);
     pd.SetLevelsOfDetail(order);
     pd.SetDataFormat(VTKFormat::BINARY);
     pd.SetHighOrderOutput(true);
@@ -172,11 +170,15 @@ int main(int argc, char *argv[]) {
         pd.Save();
 
         t += dt;
-        tic();
-        Vector z(c_gf.Size());
-        oper.ImplicitSolve(dt, c_gf, z);
-        c_gf = z;
-        cout << "2: " << toc() << endl;
+        // tic();
+        // Vector z(c.Size());
+        // oper.ImplicitSolve(dt, c, z);
+        // c = z;
+        // cout << "2: " << toc() << endl;
+
+        c = t;
+        c.ProjectBdrCoefficient(one, ess_bdr);
+
         step++;
     }
 
