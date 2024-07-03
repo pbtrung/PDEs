@@ -54,8 +54,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetPreconditioner(prec);
     }
 
-    virtual void ImplicitSolve(const double dt, const HypreParVector &x,
-                               HypreParVector &y) {
+    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
