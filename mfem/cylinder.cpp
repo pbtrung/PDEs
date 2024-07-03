@@ -72,6 +72,27 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 int main(int argc, char *argv[]) {
     // Initialize the MFEM library.
     const char *mesh_file = "cylinder.mesh";
+    const char *device_config = "cpu";
+
+    OptionsParser args(argc, argv);
+    args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
+
+    args.Parse();
+    if (!args.Good()) {
+        if (myid == 0) {
+            args.PrintUsage(cout);
+        }
+        return 1;
+    }
+    if (myid == 0) {
+        args.PrintOptions(cout);
+    }
+
+    Device device(device_config);
+    if (myid == 0) {
+        device.Print();
+    }
+
     Mesh *mesh = new Mesh(mesh_file, 1, 1);
     int dim = mesh->Dimension();
 
