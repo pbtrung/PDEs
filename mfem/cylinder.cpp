@@ -61,14 +61,23 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
-        Vector B(x.Size());
-        cout << "Mmat row: " << Mmat->NumRows() << endl;
-        cout << "Mmat col: " << Mmat->NumCols() << endl;
-        cout << "B: " << B.Size() << endl;
-        cout << "x: " << x.Size() << endl;
-        Mmat->Mult(x, B);
+
+        HypreParVector X(Mmat->GetComm(), Mmat->NumRows(), x,
+                         Mmat->GetColStarts());
+        HypreParVector B(Mmat->GetComm(), Mmat->NumRows(),
+                         Mmat->GetRowStarts());
+
+        Mmat->Mult(X, B);
         cg.Mult(B, y);
         y.SetSubVector(ess_tdof_list, c0);
+
+        // cout << "Mmat row: " << Mmat->NumRows() << endl;
+        // cout << "Mmat col: " << Mmat->NumCols() << endl;
+        // cout << "B: " << B.Size() << endl;
+        // cout << "x: " << x.Size() << endl;
+        // Mmat->Mult(x, B);
+        // cg.Mult(B, y);
+        // y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
