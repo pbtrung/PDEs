@@ -8,10 +8,6 @@ using namespace mfem;
 class ConvectionDiffusionOperator : public TimeDependentOperator {
   private:
     ParFiniteElementSpace &fespace;
-    VectorCoefficient *vCoeff;
-    ConstantCoefficient *dCoeff;
-    ConvectionIntegrator *convInteg;
-    DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix *Mmat, *Kmat;
@@ -27,15 +23,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 ConstantCoefficient &dCoeff,
                                 Array<int> &ess_tdof_list, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list),
-          c0(c0), cg(fespace.GetComm()) {
-        convInteg = new ConvectionIntegrator(vCoeff);
-        diffInteg = new DiffusionIntegrator(dCoeff);
+          ess_tdof_list(ess_tdof_list), c0(c0), cg(fespace.GetComm()) {
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
-        K->AddDomainIntegrator(convInteg);
-        K->AddDomainIntegrator(diffInteg);
+        K->AddDomainIntegrator(new ConvectionIntegrator(vCoeff));
+        K->AddDomainIntegrator(new DiffusionIntegrator(dCoeff));
         M->Assemble(0);
         M->Finalize();
         K->Assemble(0);
@@ -72,8 +65,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         delete K;
         delete Mmat;
         delete Kmat;
-        delete convInteg;
-        delete diffInteg;
     }
 };
 
