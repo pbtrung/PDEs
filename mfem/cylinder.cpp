@@ -140,7 +140,6 @@ int main(int argc, char *argv[]) {
     v = 0.0;
     v(2) = -0.25;
     double d = 0.02;
-    d = -d;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
