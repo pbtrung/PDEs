@@ -18,7 +18,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     Array<int> ess_tdof_list;
 
     CGSolver cg;
-    HypreSmoother cg_prec;
+    HypreSmoother prec;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
@@ -52,8 +52,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(1);
-        cg_prec.SetType(HypreSmoother::Jacobi);
-        cg.SetPreconditioner(cg_prec);
+        prec.SetType(HypreSmoother::Jacobi);
+        cg.SetPreconditioner(prec);
     }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
@@ -170,21 +170,11 @@ int main(int argc, char *argv[]) {
         pd.Save();
 
         t += dt;
-        // tic();
-        // Vector z(c.Size());
-        // oper.ImplicitSolve(dt, c, z);
-        // c = z;
-        // cout << "2: " << toc() << endl;
-
         tic();
-        c = t;
-        c.ProjectBdrCoefficient(one, ess_bdr);
+        oper.ImplicitSolve(dt, c, c);
         cout << "2: " << toc() << endl;
 
         step++;
-        if (step == 10) {
-            break;
-        }
     }
 
     delete fec;
