@@ -15,7 +15,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
   public:
     ConvectionDiffusionOperator(FiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff, )
+                                ConstantCoefficient &dCoeff)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0) {
         m = new BilinearForm(&fespace);
         k = new BilinearForm(&fespace);
