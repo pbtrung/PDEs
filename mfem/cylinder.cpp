@@ -68,12 +68,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     }
 
     virtual ~ConvectionDiffusionOperator() {
-        delete convInteg;
-        delete diffInteg;
         delete M;
         delete K;
         delete Mmat;
         delete Kmat;
+        delete convInteg;
+        delete diffInteg;
     }
 };
 
