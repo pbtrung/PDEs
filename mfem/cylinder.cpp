@@ -18,17 +18,18 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     Array<int> ess_tdof_list;
     double c0 = 1.0;
 
-    CGSolver cg(MPI_COMM_WORLD);
+    CGSolver cg;
     HypreSmoother prec;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
-                                Array<int> &ess_tdof_list, double c0)
+                                Array<int> &ess_tdof_list, CGSolver &cg,
+                                double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list),
-          c0(c0) {
+          cg(&cg), c0(c0) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
@@ -147,7 +148,8 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
+    CGSolver cg(MPI_COMM_WORLD);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list, cg,
                                      c0);
 
     double t = 0.0;
