@@ -17,8 +17,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     HypreParMatrix *Mmat, *Kmat;
     Array<int> ess_tdof_list;
     double c0 = 1.0;
-
-    HyprePCG *cg = new HyprePCG();
     HypreSmoother prec;
 
   public:
@@ -48,18 +46,19 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
 
-        cg->SetRelTol(1e-12);
-        cg->SetAbsTol(0.0);
-        cg->SetMaxIter(1000);
-        cg->SetPrintLevel(1);
         prec.SetType(HypreSmoother::Jacobi);
-        cg->SetPreconditioner(&prec);
     }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
-        cg->SetOperator(A);
+
+        HyprePCG *cg = new HyprePCG(A);
+        cg->SetRelTol(1e-12);
+        cg->SetAbsTol(0.0);
+        cg->SetMaxIter(1000);
+        cg->SetPrintLevel(1);
+        cg->SetPreconditioner(&prec);
 
         Vector B(x.Size());
         cout << "Mmat row: " << Mmat->NumRows() << endl;
@@ -70,6 +69,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg->Mult(B, y);
 
         y.SetSubVector(ess_tdof_list, c0);
+        delete cg;
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -79,7 +79,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         delete Mmat;
         delete Kmat;
         delete K;
-        delete cg;
     }
 };
 
