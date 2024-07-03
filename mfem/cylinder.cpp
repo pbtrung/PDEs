@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
                                      c0);
 
     double t = 0.0;
-    double t_final = 1.0;
+    double t_final = 1.01;
     double dt = 0.01;
     int step = 0;
 
