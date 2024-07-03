@@ -18,18 +18,17 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     Array<int> ess_tdof_list;
     double c0 = 1.0;
 
-    CGSolver cg;
+    HyprePCG cg;
     HypreSmoother prec;
 
   public:
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
-                                Array<int> &ess_tdof_list, MPI_Comm comm,
-                                double c0)
+                                Array<int> &ess_tdof_list, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list),
-          cg(comm), c0(c0) {
+          c0(c0) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
@@ -62,6 +61,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
+
         Vector B(x.Size());
         cout << "Mmat row: " << Mmat->NumRows() << endl;
         cout << "Mmat col: " << Mmat->NumCols() << endl;
@@ -69,6 +69,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cout << "x: " << x.Size() << endl;
         Mmat->Mult(x, B);
         cg.Mult(B, y);
+
         y.SetSubVector(ess_tdof_list, c0);
     }
 
@@ -149,7 +150,7 @@ int main(int argc, char *argv[]) {
     ConstantCoefficient dCoeff(d);
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
-                                     MPI_COMM_WORLD, c0);
+                                     c0);
 
     double t = 0.0;
     double t_final = 1.0;
