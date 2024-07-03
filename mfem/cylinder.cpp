@@ -117,8 +117,8 @@ int main(int argc, char *argv[]) {
     HYPRE_BigInt size = fespace.GlobalTrueVSize();
     if (myid == 0) {
         cout << "Number of finite element unknowns: " << size << endl;
+        cout << "1: " << toc() << endl;
     }
-    cout << "1: " << toc() << endl;
 
     ParGridFunction c(&fespace);
     c = 0.0;
@@ -173,10 +173,10 @@ int main(int argc, char *argv[]) {
         be_solver.Step(u, t, dt);
         u.SetSubVector(ess_tdof_list, c0);
         c.SetFromTrueDofs(u);
-        cout << "2: " << toc() << endl;
         step++;
 
         if (myid == 0) {
+            cout << "2: " << toc() << endl;
             cout << "Step " << step << ", Time " << t
                  << ", Norm of solution: " << c.Norml2() << endl;
         }
