@@ -37,7 +37,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K = k->SpMat();
         Adv = adv->SpMat();
 
-        Add(Adv, K, Adv); // Adv becomes Adv + K
+        Adv.Add(1.0, K); // Adv becomes Adv + K
 
         Array<int> ess_bdr;
         ess_bdr.SetSize(fespace.GetMesh()->bdr_attributes.Max());
