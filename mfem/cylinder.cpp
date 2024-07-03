@@ -14,7 +14,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     DiffusionIntegrator *diffInteg;
     ParBilinearForm *M;
     ParBilinearForm *K;
-    HypreParMatrix Mmat, Kmat;
+    HypreParMatrix *Mmat, *Kmat;
+    Array<int> ess_tdof_list;
+    double c0 = 1.0;
 
     CGSolver cg;
     HypreSmoother prec;
@@ -23,9 +25,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
-                                Array<int> &ess_tdof_list)
+                                Array<int> &ess_tdof_list, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff) {
+          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list),
+          c0(c0) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
@@ -38,15 +41,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Assemble(0);
         K->Finalize();
 
-        // Mmat = M->ParallelAssemble();
+        Mmat = M->ParallelAssemble();
         // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
-        // Kmat = K->ParallelAssemble();
+        Kmat = K->ParallelAssemble();
         // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
-
-        M->FormSystemMatrix(ess_tdof_list, Mmat);
-        K->FormSystemMatrix(ess_tdof_list, Kmat);
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -58,20 +58,21 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        HypreParMatrix A(Mmat);
-        A.Add(dt, Kmat);
+        HypreParMatrix A(*Mmat);
+        A.Add(dt, *Kmat);
         cg.SetOperator(A);
         Vector B(x.Size());
-        Mmat.Mult(x, B);
+        Mmat->Mult(x, B);
         cg.Mult(B, y);
+        y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
         delete convInteg;
         delete diffInteg;
         delete M;
-        // delete Mmat;
-        // delete Kmat;
+        delete Mmat;
+        delete Kmat;
         delete K;
     }
 };
@@ -84,8 +85,6 @@ int main(int argc, char *argv[]) {
 
     const char *mesh_file = "cylinder.mesh";
     int order = 1;
-    bool pa = false;
-    bool fa = false;
     const char *device_config = "cpu";
 
     OptionsParser args(argc, argv);
@@ -133,8 +132,9 @@ int main(int argc, char *argv[]) {
     ess_bdr = 0;
     ess_bdr[top_boundary_attr - 1] = 1;
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-    ConstantCoefficient one(1.0);
-    c.ProjectBdrCoefficient(one, ess_bdr);
+    double c0 = 1.0;
+    ConstantCoefficient cc0(c0);
+    c.ProjectBdrCoefficient(cc0, ess_bdr);
 
     Vector v(3);
     v = 0.0;
@@ -143,7 +143,8 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
+                                     c0);
 
     double t = 0.0;
     double t_final = 1.0;
