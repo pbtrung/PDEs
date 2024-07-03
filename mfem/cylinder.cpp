@@ -54,11 +54,12 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetPreconditioner(prec);
     }
 
-    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
+    virtual void ImplicitSolve(const double dt, const HypreParVector &x,
+                               HypreParVector &y) {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
-        Vector B(x.Size());
+        HypreParVector B(x.Size());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
     }
@@ -127,17 +128,9 @@ int main(int argc, char *argv[]) {
     Array<int> ess_bdr(fespace.GetMesh()->bdr_attributes.Max());
 
     int top_boundary_attr = 2;
-
-    ess_bdr = 0;
-    for (int i = 0; i < ess_bdr.Size(); i++) {
-        if (i != top_boundary_attr - 1) {
-            ess_bdr[i] = 1;
-        }
-    }
-    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-
     ess_bdr = 0;
     ess_bdr[top_boundary_attr - 1] = 1;
+    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     ConstantCoefficient one(1.0);
     c.ProjectBdrCoefficient(one, ess_bdr);
 
@@ -176,6 +169,9 @@ int main(int argc, char *argv[]) {
         if (myid == 0) {
             cout << "Step " << step << ", Time " << t
                  << ", Norm of solution: " << c.Norml2() << endl;
+        }
+        if (step == 10) {
+            break;
         }
     }
 
