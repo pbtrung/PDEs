@@ -105,12 +105,6 @@ int main(int argc, char *argv[]) {
     Mesh mesh(mesh_file, 1, 1);
     int dim = mesh.Dimension();
 
-    cout << "Boundary attributes:" << endl;
-    for (int i = 0; i < mesh.bdr_attributes.Size(); i++) {
-        cout << "Boundary attribute " << i << ": " << mesh.bdr_attributes[i]
-             << endl;
-    }
-
     ParMesh pmesh(MPI_COMM_WORLD, mesh);
     mesh.Clear();
 
@@ -167,8 +161,12 @@ int main(int argc, char *argv[]) {
         oper.ImplicitSolve(dt, c, c);
         c.ProjectBdrCoefficient(one, ess_bdr);
         cout << "2: " << toc() << endl;
-
         step++;
+
+        if (myid == 0) {
+            cout << "Step " << step << ", Time " << t
+                 << ", Norm of solution: " << c.Norml2() << endl;
+        }
     }
 
     delete fec;
