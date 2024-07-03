@@ -15,7 +15,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix *Mmat, *Kmat;
-    Array<int> ess_tdof_list;
 
     CGSolver cg;
     HypreSmoother prec;
@@ -26,7 +25,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 ConstantCoefficient &dCoeff,
                                 Array<int> &ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list) {
+          vCoeff(&vCoeff), dCoeff(&dCoeff) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
@@ -40,7 +39,11 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
 
         Mmat = M->ParallelAssemble();
+        HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
+        delete tmp;
         Kmat = K->ParallelAssemble();
+        tmp = Kmat->EliminateRowsCols(ess_tdof_list);
+        delete tmp;
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -126,7 +129,13 @@ int main(int argc, char *argv[]) {
     int top_boundary_attr = 2;
     ess_bdr[top_boundary_attr - 1] = 1;
 
-    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+    for (int i = 0; i < ess_bdr.Size(); i++) {
+        if (i != top_boundary_attr - 1) {
+            Array<int> tmp;
+            fespace.GetEssentialTrueDofs(ess_bdr[i], tmp);
+            ess_tdof_list.Append(tmp);
+        }
+    }
     ConstantCoefficient one(1.0);
     c.ProjectBdrCoefficient(one, ess_bdr);
 
@@ -159,7 +168,6 @@ int main(int argc, char *argv[]) {
         t += dt;
         tic();
         oper.ImplicitSolve(dt, c, c);
-        c.ProjectBdrCoefficient(one, ess_bdr);
         cout << "2: " << toc() << endl;
         step++;
 
