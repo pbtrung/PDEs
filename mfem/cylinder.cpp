@@ -176,8 +176,10 @@ int main(int argc, char *argv[]) {
         // c = z;
         // cout << "2: " << toc() << endl;
 
+        tic();
         c = t;
         c.ProjectBdrCoefficient(one, ess_bdr);
+        cout << "2: " << toc() << endl;
 
         step++;
         if (step == 10) {
