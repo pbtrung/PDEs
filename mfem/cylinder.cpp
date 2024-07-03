@@ -136,8 +136,6 @@ int main(int argc, char *argv[]) {
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
                                      c0);
-    BackwardEulerSolver be_solver;
-    be_solver.Init(oper);
 
     double t = 0.0;
     double t_final = 1.01;
@@ -159,7 +157,7 @@ int main(int argc, char *argv[]) {
         pd.SetTime(t);
         pd.Save();
 
-        // t += dt;
+        t += dt;
         tic();
         oper.ImplicitSolve(dt, u, u);
         c.SetFromTrueDofs(u);
