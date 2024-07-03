@@ -39,11 +39,11 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
 
         Mmat = M->ParallelAssemble();
-        HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
-        delete tmp;
+        // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
+        // delete tmp;
         Kmat = K->ParallelAssemble();
-        tmp = Kmat->EliminateRowsCols(ess_tdof_list);
-        delete tmp;
+        // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
+        // delete tmp;
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
