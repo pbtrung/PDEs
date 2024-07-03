@@ -58,7 +58,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         HypreParMatrix A(*Mmat);
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
-        HypreParVector B(x.Size());
+        Vector B(x.Size());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
     }
