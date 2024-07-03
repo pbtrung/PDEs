@@ -18,7 +18,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     Array<int> ess_tdof_list;
     double c0 = 1.0;
 
-    CGSolver cg;
+    CGSolver cg(MPI_COMM_WORLD);
     HypreSmoother prec;
 
   public:
