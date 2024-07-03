@@ -13,18 +13,17 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     Array<int> ess_tdof_list;
 
   public:
-    ConvectionDiffusionOperator(FiniteElementSpace &fespace, Vector &velocity,
-                                double diffusion_coeff)
+    ConvectionDiffusionOperator(FiniteElementSpace &fespace,
+                                VectorCoefficient &vCoeff,
+                                ConstantCoefficient &dCoeff, )
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0) {
         m = new BilinearForm(&fespace);
         k = new BilinearForm(&fespace);
         adv = new BilinearForm(&fespace);
 
         m->AddDomainIntegrator(new MassIntegrator());
-        k->AddDomainIntegrator(
-            new DiffusionIntegrator(ConstantCoefficient(diffusion_coeff)));
-        adv->AddDomainIntegrator(new ConvectionIntegrator(
-            VectorConstantCoefficient(velocity), -1.0));
+        k->AddDomainIntegrator(new DiffusionIntegrator(dCoeff));
+        adv->AddDomainIntegrator(new ConvectionIntegrator(vCoeff, -1.0));
 
         m->Assemble();
         m->Finalize();
@@ -100,8 +99,11 @@ int main(int argc, char *argv[]) {
     // Define the diffusion coefficient.
     double diffusion_coeff = 0.02;
 
+    VectorConstantCoefficient vCoeff(v);
+    ConstantCoefficient dCoeff(diffusion_coeff);
+
     // Define the time-dependent operator.
-    ConvectionDiffusionOperator oper(fespace, v, diffusion_coeff);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff);
 
     // Define the initial condition.
     c = 0.0; // Assuming initial concentration is zero
