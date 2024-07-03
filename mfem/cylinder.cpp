@@ -7,7 +7,7 @@ using namespace mfem;
 
 class ConvectionDiffusionOperator : public TimeDependentOperator {
   private:
-    FiniteElementSpace &fespace;
+    ParFiniteElementSpace &fespace;
     VectorCoefficient *vCoeff;
     ConstantCoefficient *dCoeff;
     ConvectionIntegrator *convInteg;
@@ -125,17 +125,19 @@ int main(int argc, char *argv[]) {
     // Define the boundary condition
     Array<int> ess_tdof_list;
     Array<int> ess_bdr(fespace.GetMesh()->bdr_attributes.Max());
-    ess_bdr = 0;
-    int top_boundary_attr = 2;
-    ess_bdr[top_boundary_attr - 1] = 1;
 
+    int top_boundary_attr = 2;
+
+    ess_bdr = 0;
     for (int i = 0; i < ess_bdr.Size(); i++) {
         if (i != top_boundary_attr - 1) {
-            Array<int> tmp;
-            fespace.GetEssentialTrueDofs(ess_bdr[i], tmp);
-            ess_tdof_list.Append(tmp);
+            ess_bdr[i] = 1;
         }
     }
+    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+
+    ess_bdr = 0;
+    ess_bdr[top_boundary_attr - 1] = 1;
     ConstantCoefficient one(1.0);
     c.ProjectBdrCoefficient(one, ess_bdr);
 
