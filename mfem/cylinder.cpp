@@ -62,6 +62,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
         Vector B(x.Size());
+        cout << "Mmat row: " << Mmat->NumRows() << endl;
+        cout << "Mmat col: " << Mmat->NumCols() << endl;
+        cout << "B: " << B.Size() << endl;
+        cout << "x: " << x.Size() << endl;
         Mmat->Mult(x, B);
         cg.Mult(B, y);
         y.SetSubVector(ess_tdof_list, c0);
