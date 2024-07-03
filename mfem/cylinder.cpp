@@ -15,7 +15,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix *Mmat, *Kmat;
-    Array<int> ess_tdof_list;
+    Array<int> ess_bdr;
     double c0 = 1.0;
 
     CGSolver cg;
@@ -25,9 +25,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
-                                Array<int> &ess_tdof_list, double c0)
+                                Array<int> &ess_bdr, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list),
+          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_bdr(ess_bdr),
           c0(c0), cg(fespace.GetComm()) {
         convInteg = new ConvectionIntegrator(vCoeff);
         diffInteg = new DiffusionIntegrator(dCoeff);
@@ -42,10 +42,10 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize();
 
         Mmat = M->ParallelAssemble();
-        HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
+        HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_bdr);
         delete tmp;
         Kmat = K->ParallelAssemble();
-        tmp = Kmat->EliminateRowsCols(ess_tdof_list);
+        tmp = Kmat->EliminateRowsCols(ess_bdr);
         delete tmp;
 
         cg.iterative_mode = false;
@@ -64,7 +64,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Vector B(x.Size());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
-        y.SetSubVector(ess_tdof_list, c0);
+        // y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_bdr,
                                      c0);
 
     double t = 0.0;
@@ -173,9 +173,9 @@ int main(int argc, char *argv[]) {
             cout << "Step " << step << ", Time " << t
                  << ", Norm of solution: " << c.Norml2() << endl;
         }
-        if (step == 10) {
-            break;
-        }
+        // if (step == 10) {
+        //     break;
+        // }
     }
 
     delete fec;
