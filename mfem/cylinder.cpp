@@ -146,37 +146,37 @@ int main(int argc, char *argv[]) {
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
                                      c0);
 
-    double t = 0.0;
-    double t_final = 1.01;
-    double dt = 0.01;
-    int step = 0;
+    // double t = 0.0;
+    // double t_final = 1.01;
+    // double dt = 0.01;
+    // int step = 0;
 
-    ParaViewDataCollection pd("cylinder", &pmesh);
-    pd.SetPrefixPath("ParaView");
-    pd.RegisterField("solution", &c);
-    pd.SetLevelsOfDetail(order);
-    pd.SetDataFormat(VTKFormat::BINARY);
-    pd.SetHighOrderOutput(true);
+    // ParaViewDataCollection pd("cylinder", &pmesh);
+    // pd.SetPrefixPath("ParaView");
+    // pd.RegisterField("solution", &c);
+    // pd.SetLevelsOfDetail(order);
+    // pd.SetDataFormat(VTKFormat::BINARY);
+    // pd.SetHighOrderOutput(true);
 
-    while (t <= t_final) {
-        pd.SetCycle(step);
-        pd.SetTime(t);
-        pd.Save();
+    // while (t <= t_final) {
+    //     pd.SetCycle(step);
+    //     pd.SetTime(t);
+    //     pd.Save();
 
-        t += dt;
-        tic();
-        oper.ImplicitSolve(dt, c, c);
-        cout << "2: " << toc() << endl;
-        step++;
+    //     t += dt;
+    //     tic();
+    //     oper.ImplicitSolve(dt, c, c);
+    //     cout << "2: " << toc() << endl;
+    //     step++;
 
-        if (myid == 0) {
-            cout << "Step " << step << ", Time " << t
-                 << ", Norm of solution: " << c.Norml2() << endl;
-        }
-        // if (step == 5) {
-        //     break;
-        // }
-    }
+    //     if (myid == 0) {
+    //         cout << "Step " << step << ", Time " << t
+    //              << ", Norm of solution: " << c.Norml2() << endl;
+    //     }
+    //     // if (step == 5) {
+    //     //     break;
+    //     // }
+    // }
 
     Mpi::Finalize();
     Hypre::Finalize();
