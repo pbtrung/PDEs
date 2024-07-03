@@ -71,9 +71,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         delete convInteg;
         delete diffInteg;
         delete M;
+        delete K;
         delete Mmat;
         delete Kmat;
-        delete K;
     }
 };
 
