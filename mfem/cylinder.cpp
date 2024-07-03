@@ -27,7 +27,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 Array<int> &ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list) {
-        convInteg = new ConvectionIntegrator(vCoeff);
+        convInteg = new ConvectionIntegrator(vCoeff, -1.0);
         diffInteg = new DiffusionIntegrator(dCoeff);
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
@@ -64,7 +64,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 
         Vector B(Mmat->Height());
         Vector z(x);
-        z.SetSubVector(ess_tdof_list, 0.0);
+        z.SetSubVector(ess_tdof_list, 1.0);
         Mmat->Mult(z, B);
         cg.Mult(B, y);
 
