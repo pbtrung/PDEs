@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
     pd.SetDataFormat(VTKFormat::BINARY);
     pd.SetHighOrderOutput(true);
 
-    while (t < t_final) {
+    while (t <= t_final) {
         pd.SetCycle(step);
         pd.SetTime(t);
         pd.Save();
