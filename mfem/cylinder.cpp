@@ -121,24 +121,6 @@ int main(int argc, char *argv[]) {
     }
     cout << "1: " << toc() << endl;
 
-    AttributeSets &attr_sets = pmesh.attribute_sets;
-    AttributeSets &bdr_attr_sets = pmesh.bdr_attribute_sets;
-    if (Mpi::Root()) {
-        std::set<string> names = attr_sets.GetAttributeSetNames();
-        cout << "Element Attribute Set Names: ";
-        for (auto const &set_name : names) {
-            cout << " \"" << set_name << "\"";
-        }
-        cout << endl;
-
-        std::set<string> bdr_names = bdr_attr_sets.GetAttributeSetNames();
-        cout << "Boundary Attribute Set Names: ";
-        for (auto const &bdr_set_name : bdr_names) {
-            cout << " \"" << bdr_set_name << "\"";
-        }
-        cout << endl;
-    }
-
     ParGridFunction c(&fespace);
     c = 0.0;
 
@@ -158,6 +140,7 @@ int main(int argc, char *argv[]) {
     v = 0.0;
     v(2) = -0.25;
     double d = 0.02;
+    d = -d;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
@@ -169,32 +152,32 @@ int main(int argc, char *argv[]) {
     double dt = 0.01;
     int step = 0;
 
-    // ParaViewDataCollection pd("cylinder", &pmesh);
-    // pd.SetPrefixPath("ParaView");
-    // pd.RegisterField("solution", &c);
-    // pd.SetLevelsOfDetail(order);
-    // pd.SetDataFormat(VTKFormat::BINARY);
-    // pd.SetHighOrderOutput(true);
+    ParaViewDataCollection pd("cylinder", &pmesh);
+    pd.SetPrefixPath("ParaView");
+    pd.RegisterField("solution", &c);
+    pd.SetLevelsOfDetail(order);
+    pd.SetDataFormat(VTKFormat::BINARY);
+    pd.SetHighOrderOutput(true);
 
-    // while (t < t_final) {
-    //     pd.SetCycle(step);
-    //     pd.SetTime(t);
-    //     pd.Save();
+    while (t < t_final) {
+        pd.SetCycle(step);
+        pd.SetTime(t);
+        pd.Save();
 
-    //     t += dt;
-    //     tic();
-    //     oper.ImplicitSolve(dt, c, c);
-    //     cout << "2: " << toc() << endl;
-    //     step++;
+        t += dt;
+        tic();
+        oper.ImplicitSolve(dt, c, c);
+        cout << "2: " << toc() << endl;
+        step++;
 
-    //     if (myid == 0) {
-    //         cout << "Step " << step << ", Time " << t
-    //              << ", Norm of solution: " << c.Norml2() << endl;
-    //     }
-    //     // if (step == 10) {
-    //     //     break;
-    //     // }
-    // }
+        if (myid == 0) {
+            cout << "Step " << step << ", Time " << t
+                 << ", Norm of solution: " << c.Norml2() << endl;
+        }
+        if (step == 5) {
+            break;
+        }
+    }
 
     Mpi::Finalize();
     Hypre::Finalize();
