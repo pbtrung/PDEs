@@ -84,7 +84,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
         HypreParMatrix A(*Mmat);
         cout << "A(*Mmat) " << A.NNZ() << endl;
-        A.Add(-dt, *Kmat);
+        A.Add(dt, *Kmat);
         cout << "A.Add " << A.NNZ() << endl;
 
         cg.SetOperator(A);
@@ -182,6 +182,7 @@ int main(int argc, char *argv[]) {
     v = 0.0;
     v(2) = -0.25;
     double d = 0.02;
+    d = -d;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
@@ -211,9 +212,7 @@ int main(int argc, char *argv[]) {
         tic();
         // ode_solver.Step(c, t, dt);
         Vector z(c_gf.Size());
-        cout << c_gf(1000) << endl;
         oper.ImplicitSolve(dt, c_gf, z);
-        cout << z(1000) << endl;
         // c_gf.SetFromTrueDofs(z);
         c_gf = z;
         cout << "2: " << toc() << endl;
