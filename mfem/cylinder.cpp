@@ -62,7 +62,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         A.Add(dt, *Kmat);
         cg.SetOperator(A);
 
-        HypreParVector X(Mmat->GetComm(), Mmat->NumRows(), x,
+        HypreParVector X(Mmat->GetComm(), Mmat->NumRows(), x.GetData(),
                          Mmat->GetColStarts());
         HypreParVector B(Mmat->GetComm(), Mmat->NumRows(),
                          Mmat->GetRowStarts());
