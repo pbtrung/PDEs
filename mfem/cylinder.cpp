@@ -180,6 +180,9 @@ int main(int argc, char *argv[]) {
         c.ProjectBdrCoefficient(one, ess_bdr);
 
         step++;
+        if (step == 10) {
+            break;
+        }
     }
 
     delete fec;
