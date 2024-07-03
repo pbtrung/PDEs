@@ -70,7 +70,11 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
 };
 
 int main(int argc, char *argv[]) {
-    // Initialize the MFEM library.
+    Mpi::Init();
+    int num_procs = Mpi::WorldSize();
+    int myid = Mpi::WorldRank();
+    Hypre::Init();
+
     const char *mesh_file = "cylinder.mesh";
     const char *device_config = "cpu";
 
