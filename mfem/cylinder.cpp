@@ -146,7 +146,6 @@ int main(int argc, char *argv[]) {
     v = 0.0;
     v(2) = -0.25;
     double d = 0.02;
-    d = -d;
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
@@ -172,6 +171,10 @@ int main(int argc, char *argv[]) {
         t += dt;
         tic();
         oper.ImplicitSolve(dt, c, c);
+        if (myid == 0) {
+            cout << "Step " << step << ", Time " << t
+                 << ", Norm of solution: " << c.Norml2() << endl;
+        }
         cout << "2: " << toc() << endl;
 
         step++;
