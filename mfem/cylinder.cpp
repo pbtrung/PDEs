@@ -5,219 +5,127 @@
 using namespace std;
 using namespace mfem;
 
+// Custom TimeDependentOperator for the PDE
 class ConvectionDiffusionOperator : public TimeDependentOperator {
-  private:
-    FiniteElementSpace &fespace;
-    VectorCoefficient *vCoeff;
-    ConstantCoefficient *dCoeff;
-    ConvectionIntegrator *convInteg;
-    DiffusionIntegrator *diffInteg;
-    ParBilinearForm *M;
-    ParBilinearForm *K;
-    HypreParMatrix *Mmat, *Kmat;
+  protected:
+    BilinearForm *m, *k, *adv;
+    SparseMatrix M, K, Adv;
     Array<int> ess_tdof_list;
 
-    // ParLinearForm *bform;
-    // Vector *b = nullptr;
-
-    CGSolver cg;
-    HypreSmoother prec;
-
-    // Auxiliary vectors
-    // mutable Vector z;
-
   public:
-    ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
-                                VectorCoefficient &vCoeff,
-                                ConstantCoefficient &dCoeff,
-                                Array<int> ess_tdof_list)
-        : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          vCoeff(&vCoeff), dCoeff(&dCoeff), ess_tdof_list(ess_tdof_list) {
-        convInteg = new ConvectionIntegrator(vCoeff);
-        diffInteg = new DiffusionIntegrator(dCoeff);
-        M = new ParBilinearForm(&fespace);
-        K = new ParBilinearForm(&fespace);
-        M->AddDomainIntegrator(new MassIntegrator());
-        K->AddDomainIntegrator(convInteg);
-        K->AddDomainIntegrator(diffInteg);
-        M->Assemble(0);
-        M->Finalize();
-        // M->FormSystemMatrix(ess_tdof_list, Mmat);
-        K->Assemble(0);
-        K->Finalize();
-        // K->FormSystemMatrix(ess_tdof_list, Kmat);
+    ConvectionDiffusionOperator(FiniteElementSpace &fespace, Vector &velocity,
+                                double diffusion_coeff)
+        : TimeDependentOperator(fespace.GetTrueVSize(), 0.0) {
+        m = new BilinearForm(&fespace);
+        k = new BilinearForm(&fespace);
+        adv = new BilinearForm(&fespace);
 
-        Mmat = M->ParallelAssemble();
-        HypreParMatrix *temp = Mmat->EliminateRowsCols(ess_tdof_list);
-        delete temp;
+        m->AddDomainIntegrator(new MassIntegrator());
+        k->AddDomainIntegrator(
+            new DiffusionIntegrator(ConstantCoefficient(diffusion_coeff)));
+        adv->AddDomainIntegrator(new ConvectionIntegrator(
+            VectorConstantCoefficient(velocity), -1.0));
 
-        Kmat = K->ParallelAssemble();
-        temp = Kmat->EliminateRowsCols(ess_tdof_list);
-        delete temp;
+        m->Assemble();
+        m->Finalize();
+        k->Assemble();
+        k->Finalize();
+        adv->Assemble();
+        adv->Finalize();
 
-        cout << "Kmat " << Kmat->NNZ() << endl;
-        cout << "Mmat " << Mmat->NNZ() << endl;
+        M = m->SpMat();
+        K = k->SpMat();
+        Adv = adv->SpMat();
 
-        // bform = new ParLinearForm(&fespace);
-        // bform->Assemble();
-        // b = bform->ParallelAssemble();2
+        Add(Adv, K, Adv); // Adv becomes Adv + K
 
-        cg.iterative_mode = false;
-        cg.SetRelTol(1e-12);
-        cg.SetAbsTol(0.0);
-        cg.SetMaxIter(1000);
-        cg.SetPrintLevel(1);
-        prec.SetType(HypreSmoother::Jacobi);
-        cg.SetPreconditioner(prec);
+        Array<int> ess_bdr;
+        ess_bdr.SetSize(fespace.GetMesh()->bdr_attributes.Max());
+        ess_bdr = 0;
+        ess_bdr[1] = 1; // Assuming attribute 1 is the top circle
 
-        // z.SetSize(Mmat.Height());
+        fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
     }
 
-    // void Mult(const Vector &u, Vector &du_dt) const override {
-    //     Kmat.Mult(u, z);
-    //     z.Neg();
-    //     z.Add(1.0, *b);
-    //     cg.Mult(z, du_dt);
-    //     du_dt.SetSubVector(ess_tdof_list, 0.0);
-    // }
+    virtual void Mult(const Vector &u, Vector &du_dt) const {
+        Vector z(u.Size());
+        Adv.Mult(u, z);
+        M.Mult(z, du_dt);
+    }
 
-    virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        HypreParMatrix A(*Mmat);
-        A.Add(dt, *Kmat);
+    virtual void ImplicitSolve(const double dt, const Vector &u,
+                               Vector &du_dt) {
+        SparseMatrix A;
+        A.Add(1.0, Adv);
+        A.Add(1.0 / dt, M);
 
-        cg.SetOperator(A);
-        Vector B(Mmat->Height());
-        Vector z(x);
-        z.SetSubVector(ess_tdof_list, 1.0);
-        Mmat->Mult(z, B);
-        cg.Mult(B, y);
-        // y.SetSubVector(ess_tdof_list, 1.0);
+        GSSmoother M_inv(M);
+        PCG(A, M_inv, du_dt, du_dt, 0, 200, 1e-12, 0.0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
-        delete convInteg;
-        delete diffInteg;
-        delete M;
-        delete Mmat;
-        delete Kmat;
-        // delete bform;
-        delete K;
+        delete m;
+        delete k;
+        delete adv;
     }
 };
 
 int main(int argc, char *argv[]) {
-    Mpi::Init();
-    int num_procs = Mpi::WorldSize();
-    int myid = Mpi::WorldRank();
-    Hypre::Init();
+    // Initialize the MFEM library.
+    const char *mesh_file = "cylinder.mesh";
+    Mesh *mesh = new Mesh(mesh_file, 1, 1);
+    int dim = mesh->Dimension();
 
-    const char *mesh_file = "cylinder.msh";
+    // Define a finite element space on the mesh.
     int order = 1;
-    bool pa = false;
-    bool fa = false;
-    const char *device_config = "cpu";
+    H1_FECollection fec(order, dim);
+    FiniteElementSpace fespace(mesh, &fec);
 
-    OptionsParser args(argc, argv);
-    args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
+    // Define the solution vector 'c' as a grid function.
+    GridFunction c(&fespace);
+    c = 0.0; // Initialize with zero concentration
 
-    args.Parse();
-    if (!args.Good()) {
-        if (myid == 0) {
-            args.PrintUsage(cout);
-        }
-        return 1;
-    }
-    if (myid == 0) {
-        args.PrintOptions(cout);
-    }
-
-    Device device(device_config);
-    if (myid == 0) {
-        device.Print();
-    }
-
-    tic();
-    Mesh mesh(mesh_file, 1, 1);
-    int dim = mesh.Dimension();
-
-    cout << "Boundary attributes:" << endl;
-    for (int i = 0; i < mesh.bdr_attributes.Size(); i++) {
-        cout << "Boundary attribute " << i << ": " << mesh.bdr_attributes[i]
-             << endl;
-    }
-
-    ParMesh pmesh(MPI_COMM_WORLD, mesh);
-    mesh.Clear();
-
-    FiniteElementCollection *fec = new H1_FECollection(order, dim);
-
-    ParFiniteElementSpace fespace(&pmesh, fec);
-    HYPRE_BigInt size = fespace.GlobalTrueVSize();
-    if (myid == 0) {
-        cout << "Number of finite element unknowns: " << size << endl;
-    }
-    cout << "1: " << toc() << endl;
-
-    ParGridFunction c_gf(&fespace);
-    c_gf = 0.0;
-
-    // Define the boundary condition
-    Array<int> ess_tdof_list;
-    Array<int> ess_bdr(fespace.GetMesh()->bdr_attributes.Max());
-    ess_bdr = 0;
-    int top_boundary_attr = 2;
-    ess_bdr[top_boundary_attr - 1] = 1;
-
-    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+    // Define the boundary condition.
+    Array<int> top_boundary(mesh->bdr_attributes.Max());
+    top_boundary = 0;
+    top_boundary[1] = 1; // Assuming attribute 1 corresponds to the top circle
     ConstantCoefficient one(1.0);
-    c_gf.ProjectBdrCoefficient(one, ess_bdr);
-    Vector c;
-    c_gf.GetTrueDofs(c);
+    c.ProjectBdrCoefficient(one, top_boundary);
 
-    Vector v(3);
+    // Define the velocity vector v.
+    Vector v(dim);
     v = 0.0;
-    v(2) = -0.25;
-    double d = 0.02;
-    d = -d;
-    VectorConstantCoefficient vCoeff(v);
-    ConstantCoefficient dCoeff(d);
+    v[2] = -0.25;
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
-    // BackwardEulerSolver ode_solver;
-    // RK3SSPSolver ode_solver;
-    // ode_solver.Init(oper);
+    // Define the diffusion coefficient.
+    double diffusion_coeff = 0.02;
 
+    // Define the time-dependent operator.
+    ConvectionDiffusionOperator oper(fespace, v, diffusion_coeff);
+
+    // Define the initial condition.
+    c = 0.0; // Assuming initial concentration is zero
+
+    // Set up the time integration.
     double t = 0.0;
     double t_final = 1.0;
     double dt = 0.01;
-    int step = 0;
 
-    ParaViewDataCollection pd("cylinder", &pmesh);
-    pd.SetPrefixPath("ParaView");
-    pd.RegisterField("solution", &c_gf);
-    pd.SetLevelsOfDetail(order);
-    pd.SetDataFormat(VTKFormat::BINARY);
-    pd.SetHighOrderOutput(true);
+    // RK4 time integrator
+    RK4Solver ode_solver;
+    ode_solver.Init(oper);
 
+    // Time integration loop.
     while (t < t_final) {
-        pd.SetCycle(step);
-        pd.SetTime(t);
-        pd.Save();
-
-        t += dt;
-        tic();
-        // ode_solver.Step(c, t, dt);
-        Vector z(c_gf.Size());
-        oper.ImplicitSolve(dt, c_gf, z);
-        // c_gf.SetFromTrueDofs(z);
-        c_gf = z;
-        cout << "2: " << toc() << endl;
-        step++;
-        if (step == 10) {
-            break;
-        }
+        ode_solver.Step(c, t, dt);
     }
 
-    delete fec;
+    // Output the result.
+    ofstream sol_ofs("solution.gf");
+    sol_ofs.precision(8);
+    c.Save(sol_ofs);
+
+    delete mesh;
+
     return 0;
 }
