@@ -173,9 +173,9 @@ int main(int argc, char *argv[]) {
             cout << "Step " << step << ", Time " << t
                  << ", Norm of solution: " << c.Norml2() << endl;
         }
-        if (step == 5) {
-            break;
-        }
+        // if (step == 5) {
+        //     break;
+        // }
     }
 
     Mpi::Finalize();
