@@ -152,6 +152,9 @@ int main(int argc, char *argv[]) {
     double dt = 0.01;
     int step = 0;
 
+    Vector u;
+    c.GetTrueDofs(u);
+
     ParaViewDataCollection pd("cylinder", &pmesh);
     pd.SetPrefixPath("ParaView");
     pd.RegisterField("solution", &c);
@@ -167,8 +170,9 @@ int main(int argc, char *argv[]) {
         // t += dt;
         tic();
         // oper.ImplicitSolve(dt, c, c);
-        be_solver.Step(c, t, dt);
-        c.SetSubVector(ess_tdof_list, c0);
+        be_solver.Step(u, t, dt);
+        u.SetSubVector(ess_tdof_list, c0);
+        c.SetFromTrueDofs(u);
         cout << "2: " << toc() << endl;
         step++;
 
