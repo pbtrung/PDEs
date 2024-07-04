@@ -24,16 +24,18 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 Array<int> &ess_tdof_list, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
           c0(c0), cg(fespace.GetComm()) {
+        int skip_zeros = 0;
+
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(new ConvectionIntegrator(vCoeff));
         K->AddDomainIntegrator(new DiffusionIntegrator(dCoeff));
 
-        M->Assemble(0);
-        M->Finalize();
-        K->Assemble(0);
-        K->Finalize();
+        M->Assemble(skip_zeros);
+        M->Finalize(skip_zeros);
+        K->Assemble(skip_zeros);
+        K->Finalize(skip_zeros);
 
         Mmat = M->ParallelAssemble();
         HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
