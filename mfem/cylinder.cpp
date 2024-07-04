@@ -28,12 +28,14 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         M->AddDomainIntegrator(new MassIntegrator());
         K->AddDomainIntegrator(new ConvectionIntegrator(vCoeff));
         K->AddDomainIntegrator(new DiffusionIntegrator(dCoeff));
+
         M->Assemble(0);
-        M->FormSystemMatrix(ess_tdof_list, *Mmat);
         M->Finalize();
+        M->FormSystemMatrix(ess_tdof_list, *Mmat);
+
         K->Assemble(0);
-        K->FormSystemMatrix(ess_tdof_list, *Kmat);
         K->Finalize();
+        K->FormSystemMatrix(ess_tdof_list, *Kmat);
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
