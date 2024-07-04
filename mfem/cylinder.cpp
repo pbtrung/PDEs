@@ -11,8 +11,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix *Mmat, *Kmat;
-    Array<int> ess_tdof_list;
-    double c0 = 1.0;
 
     CGSolver cg;
     HypreSmoother prec;
@@ -21,9 +19,9 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ConvectionDiffusionOperator(ParFiniteElementSpace &fespace,
                                 VectorCoefficient &vCoeff,
                                 ConstantCoefficient &dCoeff,
-                                Array<int> &ess_tdof_list, double c0)
+                                Array<int> &ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          ess_tdof_list(ess_tdof_list), c0(c0), cg(fespace.GetComm()) {
+          cg(fespace.GetComm()) {
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
@@ -31,17 +29,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(new DiffusionIntegrator(dCoeff));
         M->Assemble(0);
         M->FormSystemMatrix(ess_tdof_list, *Mmat);
-        // M->Finalize();
         K->Assemble(0);
         K->FormSystemMatrix(ess_tdof_list, *Kmat);
-        // K->Finalize();
-
-        // Mmat = M->ParallelAssemble();
-        // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
-        // delete tmp;
-        // Kmat = K->ParallelAssemble();
-        // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
-        // delete tmp;
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -59,7 +48,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Vector B(x.Size());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
-        // y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -136,12 +124,11 @@ int main(int argc, char *argv[]) {
     VectorConstantCoefficient vCoeff(v);
     ConstantCoefficient dCoeff(d);
 
-    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
-                                     c0);
+    ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list);
 
     double t = 0.0;
     double dt = 0.01;
-    double t_final = 1.0 + dt;
+    double t_final = 5.0 + dt;
     int step = 0;
 
     Vector u;
