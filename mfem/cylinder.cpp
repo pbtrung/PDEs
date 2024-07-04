@@ -37,10 +37,13 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Assemble(skip_zeros);
         K->Finalize(skip_zeros);
 
-        Mmat = M->ParallelAssemble();
+        M->FormSystemMatrix(ess_tdof_list, *Mmat);
+        // Mmat = M->ParallelAssemble();
         // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
-        Kmat = K->ParallelAssemble();
+        Array<int> empty;
+        K->FormSystemMatrix(empty, *Kmat);
+        // Kmat = K->ParallelAssemble();
         // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
 
