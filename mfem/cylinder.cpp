@@ -11,7 +11,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix *Mmat, *Kmat;
-    // Array<int> ess_tdof_list;
+    Array<int> ess_tdof_list;
     double c0 = 1.0;
 
     CGSolver cg;
@@ -23,7 +23,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 ConstantCoefficient &dCoeff,
                                 Array<int> &ess_tdof_list, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          c0(c0), cg(fespace.GetComm()) {
+          c0(c0), cg(fespace.GetComm()), ess_tdof_list(ess_tdof_list) {
         int skip_zeros = 0;
 
         M = new ParBilinearForm(&fespace);
@@ -38,11 +38,11 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize(skip_zeros);
 
         Mmat = M->ParallelAssemble();
-        HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
-        delete tmp;
+        // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
+        // delete tmp;
         Kmat = K->ParallelAssemble();
-        tmp = Kmat->EliminateRowsCols(ess_tdof_list);
-        delete tmp;
+        // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
+        // delete tmp;
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -60,7 +60,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Vector B(x.Size());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
-        // y.SetSubVector(ess_tdof_list, c0);
+        y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
