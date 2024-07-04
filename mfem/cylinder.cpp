@@ -38,14 +38,8 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->Finalize(skip_zeros);
 
         M->FormSystemMatrix(ess_tdof_list, Mmat);
-        // Mmat = M->ParallelAssemble();
-        // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
-        // delete tmp;
         Array<int> empty;
         K->FormSystemMatrix(empty, Kmat);
-        // Kmat = K->ParallelAssemble();
-        // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
-        // delete tmp;
 
         cg.iterative_mode = false;
         cg.SetRelTol(1e-12);
@@ -69,8 +63,6 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     virtual ~ConvectionDiffusionOperator() {
         delete M;
         delete K;
-        // delete Mmat;
-        // delete Kmat;
     }
 };
 
@@ -145,7 +137,7 @@ int main(int argc, char *argv[]) {
 
     double t = 0.0;
     double dt = 0.01;
-    double t_final = 1.0 + dt;
+    double t_final = 5.0;
     int step = 0;
 
     Vector u;
@@ -157,26 +149,26 @@ int main(int argc, char *argv[]) {
     pd.SetLevelsOfDetail(order);
     pd.SetDataFormat(VTKFormat::BINARY);
     pd.SetHighOrderOutput(true);
+    pd.SetCycle(step);
+    pd.SetTime(t);
+    pd.Save();
 
-    while (t <= t_final) {
-        pd.SetCycle(step);
-        pd.SetTime(t);
-        pd.Save();
-
+    while (t < t_final) {
         t += dt;
+
         tic();
         oper.ImplicitSolve(dt, u, u);
         c.SetFromTrueDofs(u);
         step++;
-
         if (myid == 0) {
             cout << "2: " << toc() << endl;
             cout << "Step " << step << ", Time " << t
                  << ", Norm of solution: " << c.Norml2() << endl;
         }
-        // if (step == 10) {
-        //     break;
-        // }
+
+        pd.SetCycle(step);
+        pd.SetTime(t);
+        pd.Save();
     }
 
     delete fec;
