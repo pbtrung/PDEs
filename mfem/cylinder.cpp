@@ -11,6 +11,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
     ParBilinearForm *M;
     ParBilinearForm *K;
     HypreParMatrix *Mmat, *Kmat;
+    Array<int> ess_tdof_list;
 
     CGSolver cg;
     HypreSmoother prec;
@@ -21,7 +22,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 ConstantCoefficient &dCoeff,
                                 Array<int> &ess_tdof_list)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          cg(fespace.GetComm()) {
+          cg(fespace.GetComm()), ess_tdof_list(ess_tdof_list) {
         M = new ParBilinearForm(&fespace);
         K = new ParBilinearForm(&fespace);
         M->AddDomainIntegrator(new MassIntegrator());
