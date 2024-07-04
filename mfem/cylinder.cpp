@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 
     double t = 0.0;
     double dt = 0.01;
-    double t_final = 5.0 + dt;
+    double t_final = 1.0 + dt;
     int step = 0;
 
     Vector u;
