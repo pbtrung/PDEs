@@ -30,14 +30,16 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->AddDomainIntegrator(new ConvectionIntegrator(vCoeff));
         K->AddDomainIntegrator(new DiffusionIntegrator(dCoeff));
         M->Assemble(0);
-        M->Finalize();
+        M->FormSystemMatrix(ess_tdof_list, *Mmat);
+        // M->Finalize();
         K->Assemble(0);
-        K->Finalize();
+        K->FormSystemMatrix(ess_tdof_list, *Kmat);
+        // K->Finalize();
 
-        Mmat = M->ParallelAssemble();
+        // Mmat = M->ParallelAssemble();
         // HypreParMatrix *tmp = Mmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
-        Kmat = K->ParallelAssemble();
+        // Kmat = K->ParallelAssemble();
         // tmp = Kmat->EliminateRowsCols(ess_tdof_list);
         // delete tmp;
 
@@ -57,7 +59,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         Vector B(x.Size());
         Mmat->Mult(x, B);
         cg.Mult(B, y);
-        y.SetSubVector(ess_tdof_list, c0);
+        // y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
