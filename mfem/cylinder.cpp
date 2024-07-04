@@ -56,10 +56,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetOperator(A);
         Vector B(x.Size());
         Mmat->Mult(x, B);
-        for (int i = 0; i < ess_tdof_list.Size(); i++) {
-            int dof = ess_tdof_list[i];
-            B[dof] = c0;
-        }
+        B.SetSubVector(ess_tdof_list, c0);
         cg.Mult(B, y);
         y.SetSubVector(ess_tdof_list, c0);
     }
