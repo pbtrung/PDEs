@@ -153,7 +153,7 @@ def solve(mesh, fname, cond_type, cell_markers, facet_markers):
         log(f"4: Took {e-s:.4f}s")
 
     # Time-stepping
-    T = 5.0
+    T = 2.0
     t = 0.0
     c = Function(V)
 

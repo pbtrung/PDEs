@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
 
     double t = 0.0;
     double dt = 0.01;
-    double t_final = 5.0;
+    double t_final = 2.0;
     int step = 0;
 
     Vector u;
