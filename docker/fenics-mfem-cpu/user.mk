@@ -159,7 +159,7 @@ MFEM_USE_CALIPER       = NO
 MFEM_USE_ALGOIM        = NO
 MFEM_USE_UMPIRE        = NO
 MFEM_USE_SIMD          = NO
-MFEM_USE_ADIOS2        = NO
+MFEM_USE_ADIOS2        = YES
 MFEM_USE_MKL_CPARDISO  = NO
 MFEM_USE_MOONOLITH     = NO
 MFEM_USE_ADFORWARD     = NO
@@ -545,3 +545,7 @@ VERBOSE = NO
 
 # Optional build tag
 MFEM_BUILD_TAG = $(shell uname -snm)
+
+#################################
+ADIOS2_DIR = /usr/local/lib
+CXXFLAGS += -DADIOS2_USE_MPI
