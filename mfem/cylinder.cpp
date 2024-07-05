@@ -143,15 +143,13 @@ int main(int argc, char *argv[]) {
     Vector u;
     c.GetTrueDofs(u);
 
-    ParaViewDataCollection pd("cylinder", &pmesh);
-    pd.SetPrefixPath("ParaView");
-    pd.RegisterField("solution", &c);
-    pd.SetLevelsOfDetail(order);
-    pd.SetDataFormat(VTKFormat::BINARY);
-    pd.SetHighOrderOutput(true);
-    pd.SetCycle(step);
-    pd.SetTime(t);
-    pd.Save();
+    ADIOS2DataCollection dataCol("cylinder", &pmesh);
+    dataCol.SetPrefixPath("results");
+    dataCol.SetLevelsOfDetail(1);
+    dataCol.RegisterField("solution", &c);
+    dataCol.SetCycle(step);
+    dataCol.SetTime(t);
+    dataCol.Save();
 
     while (t < t_final) {
         t += dt;
@@ -166,9 +164,9 @@ int main(int argc, char *argv[]) {
                  << ", Norm of solution: " << c.Norml2() << endl;
         }
 
-        pd.SetCycle(step);
-        pd.SetTime(t);
-        pd.Save();
+        dataCol.SetCycle(step);
+        dataCol.SetTime(t);
+        dataCol.Save();
     }
 
     delete fec;
