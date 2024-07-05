@@ -144,7 +144,6 @@ int main(int argc, char *argv[]) {
     c.GetTrueDofs(u);
 
     ADIOS2DataCollection dataCol(MPI_COMM_WORLD, "results", &pmesh);
-    dataCol.SetPrefixPath("results");
     dataCol.SetLevelsOfDetail(1);
     dataCol.RegisterField("concentration", &c);
     dataCol.SetCycle(step);
@@ -165,7 +164,7 @@ int main(int argc, char *argv[]) {
         }
 
         dataCol.SetCycle(step);
-        dataCol.SetTime(t);
+        dataCol.SetTime(t / 100);
         dataCol.Save();
     }
 
