@@ -365,7 +365,7 @@ NETCDF_LIB = $(XLINKER)-rpath,$(NETCDF_DIR)/lib -L$(NETCDF_DIR)/lib\
 
 # PETSc library configuration (version greater or equal to 3.8 or the dev branch)
 PETSC_ARCH := linux-gnu-real64-32
-PETSC_DIR  := $(MFEM_DIR)/../petsc/$(PETSC_ARCH)
+PETSC_DIR  := /usr/local/petsc/$(PETSC_ARCH)
 PETSC_VARS := $(PETSC_DIR)/lib/petsc/conf/petscvariables
 PETSC_FOUND := $(if $(wildcard $(PETSC_VARS)),YES,)
 PETSC_INC_VAR = PETSC_CC_INCLUDES
@@ -378,7 +378,7 @@ ifeq ($(PETSC_FOUND),YES)
       $(subst $(CXX_XLINKER),$(XLINKER),$(PETSC_DEP))
 endif
 
-SLEPC_DIR := $(MFEM_DIR)/../slepc
+SLEPC_DIR := /usr/local/slepc
 SLEPC_VARS := $(SLEPC_DIR)/lib/slepc/conf/slepc_variables
 SLEPC_FOUND := $(if $(wildcard $(SLEPC_VARS)),YES,)
 SLEPC_INC_VAR = SLEPC_INCLUDE
