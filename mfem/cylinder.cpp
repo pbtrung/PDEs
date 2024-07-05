@@ -48,23 +48,16 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         cg.SetPrintLevel(1);
         prec.SetType(HypreSmoother::Jacobi);
         cg.SetPreconditioner(prec);
-        cg.SetOperator(Mmat);
     }
 
     virtual void ImplicitSolve(const double dt, const Vector &x, Vector &y) {
-        // HypreParMatrix A(Mmat);
-        // A.Add(dt, Kmat);
-        // cg.SetOperator(A);
-        // Vector B(x.Size());
-        // Mmat.Mult(x, B);
-        // cg.Mult(B, y);
-        // y.SetSubVector(ess_tdof_list, c0);
-
-        Vector z(x.Size());
-        Kmat.Mult(x, z);
-        // z.Neg();
-        cg.Mult(z, y);
-        y.SetSubVector(ess_tdof_list, 0.0);
+        HypreParMatrix A(Mmat);
+        A.Add(dt, Kmat);
+        cg.SetOperator(A);
+        Vector B(x.Size());
+        Mmat.Mult(x, B);
+        cg.Mult(B, y);
+        y.SetSubVector(ess_tdof_list, c0);
     }
 
     virtual ~ConvectionDiffusionOperator() {
@@ -141,8 +134,6 @@ int main(int argc, char *argv[]) {
 
     ConvectionDiffusionOperator oper(fespace, vCoeff, dCoeff, ess_tdof_list,
                                      c0);
-    BackwardEulerSolver ode_solver;
-    ode_solver.Init(oper);
 
     double t = 0.0;
     double dt = 0.01;
@@ -163,8 +154,10 @@ int main(int argc, char *argv[]) {
     pd.Save();
 
     while (t < t_final) {
+        t += dt;
+
         tic();
-        ode_solver.Step(u, t, dt);
+        oper.ImplicitSolve(dt, u, u);
         c.SetFromTrueDofs(u);
         step++;
         if (myid == 0) {
