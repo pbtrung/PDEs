@@ -98,7 +98,7 @@ else
 endif
 
 # Set CXXFLAGS to overwrite the default selection of DEBUG_FLAGS/OPTIM_FLAGS
-# CXXFLAGS = -O3 -march=native
+CXXFLAGS += -O3 -march=native
 
 # Optional extra compile flags, in addition to CXXFLAGS:
 # CPPFLAGS =
@@ -549,3 +549,4 @@ MFEM_BUILD_TAG = $(shell uname -snm)
 #################################
 ADIOS2_DIR = /usr/local/lib
 CXXFLAGS += -DADIOS2_USE_MPI
+LDFLAGS += -ladios2_cxx11_mpi
