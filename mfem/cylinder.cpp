@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     Vector u;
     c.GetTrueDofs(u);
 
-    ADIOS2DataCollection dataCol("cylinder", &pmesh);
+    ADIOS2DataCollection dataCol(MPI_COMM_WORLD, "cylinder", &pmesh);
     dataCol.SetPrefixPath("results");
     dataCol.SetLevelsOfDetail(1);
     dataCol.RegisterField("solution", &c);
