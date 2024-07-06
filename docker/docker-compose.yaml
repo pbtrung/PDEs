@@ -39,3 +39,11 @@ services:
         uid: 10000
         gid: 10000
     image: fenics-mfem-cpu:latest
+
+  spack:
+    build:
+      context: spack
+      args:
+        uid: 10000
+        gid: 10000
+    image: spack:latest
