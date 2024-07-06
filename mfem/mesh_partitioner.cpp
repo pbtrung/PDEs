@@ -2,6 +2,9 @@
 #include <fstream>
 #include <iostream>
 
+using namespace std;
+using namespace mfem;
+
 void recover_bdr_partitioning(const Mesh *mesh, const Array<int> &partitioning,
                               Array<int> &bdr_partitioning) {
     bdr_partitioning.SetSize(mesh->GetNBE());
