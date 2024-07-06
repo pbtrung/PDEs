@@ -65,7 +65,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         HypreBoomerAMG *amg = new HypreBoomerAMG(A);
         Vector B(x.Size());
         Mmat.Mult(x, B);
-        pcg->SetRelTol(1e-12);
+        pcg->SetTol(1e-12);
         pcg->SetAbsTol(0.0);
         pcg->SetMaxIter(1000);
         pcg->SetPrintLevel(1);
