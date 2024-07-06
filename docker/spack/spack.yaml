@@ -10,6 +10,7 @@ spack:
   - mumps+mpi+metis+parmetis
   - mpich datatype-engine=dataloop
   - petsc+hypre+mumps+superlu-dist+hdf5
+  - fenics-dolfinx+adios2 py-fenics-dolfinx cflags="-O3" fflags="-O3"
 
   packages:
     all:
