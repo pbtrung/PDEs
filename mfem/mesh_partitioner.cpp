@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     const char *mesh_prefix = "cylinder.mesh.";
     int np = 1;
     int part_method = 1;
-    int precision = 14;
+    int precision = 17;
 
     OptionsParser args(argc, argv);
     args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
