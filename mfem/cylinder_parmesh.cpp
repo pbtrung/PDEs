@@ -42,7 +42,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
         K->FormSystemMatrix(empty, Kmat);
 
         cg.iterative_mode = false;
-        cg.SetRelTol(1e-12);
+        cg.SetRelTol(1e-10);
         cg.SetAbsTol(0.0);
         cg.SetMaxIter(1000);
         cg.SetPrintLevel(1);
