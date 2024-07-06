@@ -48,7 +48,6 @@ int main(int argc, char *argv[]) {
     delete[] part;
     recover_bdr_partitioning(mesh, partitioning, bdr_partitioning);
 
-    string mesh_prefix_str(mesh_prefix);
     MeshPartitioner partitioner(*mesh, np, partitioning);
     MeshPart mesh_part;
 
