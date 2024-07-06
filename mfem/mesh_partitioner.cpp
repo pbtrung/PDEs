@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
     const char *mesh_prefix = "cylinder.mesh.";
     int np = 1;
     int part_method = 1;
+    int precision = 14;
 
     OptionsParser args(argc, argv);
     args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
@@ -50,13 +51,10 @@ int main(int argc, char *argv[]) {
     string mesh_prefix_str(mesh_prefix);
     MeshPartitioner partitioner(*mesh, np, partitioning);
     MeshPart mesh_part;
-    int precision;
-    cout << "Enter floating point output precision (num. digits): " << flush;
-    cin >> precision;
+
     for (int i = 0; i < np; i++) {
         partitioner.ExtractPart(i, mesh_part);
         ofstream omesh(MakeParFilename(mesh_prefix, i));
-        omesh.precision(precision);
         mesh_part.Print(omesh);
     }
     cout << "New parallel mesh files: " << mesh_prefix << "<rank>" << endl;
