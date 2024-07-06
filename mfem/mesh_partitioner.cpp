@@ -36,7 +36,11 @@ int main(int argc, char *argv[]) {
 
     Array<int> partitioning;
     Array<int> bdr_partitioning;
-    Mesh *mesh;
+    Mesh *mesh = new Mesh(mesh_file, 1, 1);
+    partitioning.SetSize(mesh->GetNE());
+    partitioning = 0;
+    bdr_partitioning.SetSize(mesh->GetNBE());
+    bdr_partitioning = 0;
 
     int *part = mesh->GeneratePartitioning(np, part_method);
     partitioning = Array<int>(part, mesh->GetNE());
