@@ -8,7 +8,7 @@ spack:
   - dealii@master~examples
   - mfem@develop+petsc+suite-sparse+superlu-dist+shared~static
   - mumps+mpi+metis+parmetis
-  - mpich datatype-engine=dataloop
+  - mpich@develop datatype-engine=dataloop
   - petsc+hypre+mumps+superlu-dist+hdf5
   - fenics-dolfinx@main+adios2 cflags="-O3" fflags="-O3"
   - py-fenics-dolfinx@main
