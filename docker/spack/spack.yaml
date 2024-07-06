@@ -1,0 +1,41 @@
+spack:
+  specs:
+  - cmake
+  - python
+  - valgrind
+  - gdb
+  - gmsh
+  - dealii@master+mpi+petsc+p4est+python+trilinos~hdf5~gmsh~sundials~oce~cgal~assimp~symengine~ginkgo~threads~vtk
+  - mfem@develop+mpi+petsc+suite-sparse+superlu-dist+shared~static
+  - mumps+mpi+metis+parmetis
+  - mpich@:4.2.1 datatype-engine=dataloop
+  - petsc+hypre+mumps+superlu-dist~hdf5
+
+  packages:
+    all:
+      target:
+      - x86_64
+      providers:
+        mpi: [mpich]
+
+  container:
+    images:
+      os: "ubuntu:24.04"
+      spack: develop
+
+    format: docker
+
+    strip: true
+
+    os_packages:
+      final:
+      - build-essential
+      - clangd
+      - clang-format
+      - curl
+      - gfortran
+      - git
+      - vim
+      - wget
+      - zsh
+      - nano
