@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < np; i++) {
         partitioner.ExtractPart(i, mesh_part);
         ofstream omesh(MakeParFilename(mesh_prefix, i));
+        omesh.precision(precision);
         mesh_part.Print(omesh);
     }
     cout << "New parallel mesh files: " << mesh_prefix << "<rank>" << endl;
