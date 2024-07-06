@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     Mesh *mesh;
 
     int *part = mesh->GeneratePartitioning(np, part_method);
-    Array<int> partitioning = Array<int>(part, mesh->GetNE());
+    partitioning = Array<int>(part, mesh->GetNE());
     delete[] part;
     recover_bdr_partitioning(mesh, partitioning, bdr_partitioning);
 
