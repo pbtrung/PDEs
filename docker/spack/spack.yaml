@@ -5,11 +5,11 @@ spack:
   - valgrind
   - gdb
   - gmsh
-  - dealii@master+mpi+petsc+p4est+python+trilinos~hdf5~gmsh~sundials~oce~cgal~assimp~symengine~ginkgo~threads~vtk
-  - mfem@develop+mpi+petsc+suite-sparse+superlu-dist+shared~static
+  - dealii@master~examples
+  - mfem@develop+petsc+suite-sparse+superlu-dist+shared~static
   - mumps+mpi+metis+parmetis
-  - mpich@:4.2.1 datatype-engine=dataloop
-  - petsc+hypre+mumps+superlu-dist~hdf5
+  - mpich+datatype-engine=dataloop
+  - petsc+hypre+mumps+superlu-dist+hdf5
 
   packages:
     all:
