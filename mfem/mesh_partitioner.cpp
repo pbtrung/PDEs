@@ -16,8 +16,8 @@ void recover_bdr_partitioning(const Mesh *mesh, const Array<int> &partitioning,
 }
 
 int main(int argc, char *argv[]) {
-    char *mesh_file = "cylinder.mesh";
-    char *mesh_prefix = "cylinder.mesh.";
+    const char *mesh_file = "cylinder.mesh";
+    const char *mesh_prefix = "cylinder.mesh.";
     int np = 1;
     int part_method = 1;
 
