@@ -6,7 +6,7 @@ spack:
   - gdb
   - gmsh
   - dealii@master~examples~trilinos
-  - mfem@develop+petsc+suite-sparse+superlu-dist+shared+mumps+slepc+sundial+gslib+conduit~static
+  - mfem@develop+petsc+suite-sparse+superlu-dist+shared+mumps+slepc+sundials+gslib+conduit~static
   - mpich@develop datatype-engine=dataloop
   - fenics-dolfinx@main+adios2 cflags="-O3" fflags="-O3"
   - py-fenics-dolfinx@main
