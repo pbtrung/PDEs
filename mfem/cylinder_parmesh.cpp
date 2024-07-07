@@ -20,7 +20,7 @@ class ConvectionDiffusionOperator : public TimeDependentOperator {
                                 ConstantCoefficient &dCoeff,
                                 Array<int> &ess_tdof_list, double c0)
         : TimeDependentOperator(fespace.GetTrueVSize(), 0.0), fespace(fespace),
-          c0(c0), cg(fespace.GetComm()), ess_tdof_list(ess_tdof_list) {
+          c0(c0), ess_tdof_list(ess_tdof_list) {
         int skip_zeros = 0;
 
         M = new ParBilinearForm(&fespace);
